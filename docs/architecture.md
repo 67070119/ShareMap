@@ -71,10 +71,9 @@ Navigation เรียก Routing Provider จาก Backend ผ่าน `ROUT
 ## Docker / Environment
 
 Docker Compose รับ host/application config จาก root `.env`: `FRONTEND_PORT`, `BACKEND_PORT`, `FRONTEND_URL`, `NEXT_PUBLIC_API_URL`, `JWT_SECRET`, `NODE_ENV`, `ROUTING_BASE_URL` และ seed passwords โดยค่า port เริ่มต้นยังเป็น Frontend `3000` / Backend `4000`
-เมื่อเปลี่ยน Frontend host port ต้องเปลี่ยน `FRONTEND_URL` ให้เป็น origin เดียวกัน และเมื่อเปลี่ยน Backend port ต้องเปลี่ยน `NEXT_PUBLIC_API_URL` ให้ browser เรียก port ใหม่ด้วย ส่วน `DATABASE_URL` สำหรับ Docker ถูกกำหนดเป็น PostgreSQL service `db` ภายใน Compose network; ค่า `DATABASE_URL` แบบ `localhost` ใน `.env.example` ใช้ตอนรัน Backend บน host โดยตรง
+ค่าแนะนำคือปล่อย `NEXT_PUBLIC_API_URL` ว่าง เพื่อให้ browser เรียก `/api/*` และ `/uploads/*` แบบ same-origin ผ่าน Next.js rewrite จากนั้น Frontend container จะ proxy ต่อไปยัง `http://backend:4000` ภายใน Compose network วิธีนี้ทำให้ session cookie ทำงานกับ HTTPS tunnel โดยไม่ต้องพึ่ง cross-origin cookie
+ถ้าเปลี่ยน Frontend host port ให้เปลี่ยน `FRONTEND_URL` ให้เป็น origin เดียวกัน ส่วน `DATABASE_URL` สำหรับ Docker ถูกกำหนดเป็น PostgreSQL service `db` ภายใน Compose network; ค่า `DATABASE_URL` แบบ `localhost` ใน `.env.example` ใช้ตอนรัน Backend บน host โดยตรง
 Compose แยก `backend/node_modules`, `frontend/node_modules` และ `frontend/.next` ไปไว้ใน named volumes เพื่อป้องกัน native dependency จาก Alpine container ปนกับ dependency/build cache ของ host
-เมื่อเปลี่ยน Frontend host port ต้องเปลี่ยน `FRONTEND_URL` ให้เป็น origin เดียวกัน และเมื่อเปลี่ยน Backend port ต้องเปลี่ยน `NEXT_PUBLIC_API_URL` ให้ browser เรียก port ใหม่ด้วย ส่วน `DATABASE_URL` สำหรับ Docker ถูกกำหนดเป็น PostgreSQL service `db` ภายใน Compose network; ค่า `DATABASE_URL` แบบ `localhost` ใน `.env.example` ใช้ตอนรัน Backend บน host โดยตรง
-
 ## Authentication / Authorization
 
 - JWT เก็บใน `httpOnly` cookie ชื่อ `ogtb_session`
