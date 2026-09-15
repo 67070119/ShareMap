@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import DonationForm from '../../../../components/donation/DonationForm';
-import { api, assetUrl } from '../../../../lib/api';
+import { api } from '../../../../lib/api';
 import { updateDonationWithImages, uploadDonationImages } from '../../../../lib/donationActions';
 import { useAuth } from '../../../../lib/useAuth';
 
@@ -27,6 +27,7 @@ export default function EditDonationPage() {
       return null;
     }
   }
+
   useEffect(() => {
     let active = true;
     api(`/api/donations/${id}`)
@@ -87,28 +88,38 @@ export default function EditDonationPage() {
   }
 
   if (authLoading || !donation) {
-    return <main className="formPage"><section className="formCard"><p>{error || 'กำลังโหลด...'}</p></section></main>;
+    return <main className="page createPointPage"><div className="centerState">{error || 'กำลังโหลด...'}</div></main>;
   }
   if (!user) return null;
   if (donation.ownerId !== user.id) {
-    return <main className="formPage"><section className="formCard"><p>คุณไม่มีสิทธิ์แก้ไขโพสต์นี้</p><Link href={`/donations/${id}`}>กลับ</Link></section></main>;
+    return (
+      <main className="page narrow">
+        <section className="card">
+          <div className="errorBox">คุณไม่มีสิทธิ์แก้ไขโพสต์นี้</div>
+          <Link href={`/donations/${id}`} className="button">กลับไปหน้ารายละเอียด</Link>
+        </section>
+      </main>
+    );
   }
 
   if (partialUpload) {
     return (
-      <main className="formPage">
-        <section className="formCard partialSaveCard">
-          <Link href={`/donations/${id}`} className="backLink">← กลับไปหน้ารายละเอียด</Link>
-          <p className="formEyebrow">CHANGES SAVED</p>
-          <h1>บันทึกข้อมูลเรียบร้อยแล้ว</h1>
-          <p className="formDescription">ข้อมูล Donation ถูกแก้ไขในระบบแล้ว แต่รูปใหม่อัปโหลดไม่สำเร็จ การลองใหม่จะอัปโหลดเฉพาะรูปและไม่บันทึกข้อมูลซ้ำ</p>
-          <div className="partialSaveNotice">รูปภาพ: {partialUpload.message}</div>
-          {error && <div className="formError">{error}</div>}
-          <div className="partialSaveActions">
-            <button type="button" className="primaryFormButton" onClick={retryImages} disabled={submitting}>
+      <main className="page narrow">
+        <div className="pageTitle">
+          <div>
+            <span className="eyebrow">บันทึกข้อมูลแล้ว</span>
+            <h1>อัปโหลดรูปใหม่ยังไม่สำเร็จ</h1>
+            <p>ข้อมูล Donation ถูกแก้ไขแล้ว การลองใหม่จะอัปโหลดเฉพาะรูปและไม่บันทึกข้อมูลซ้ำ</p>
+          </div>
+        </div>
+        <section className="card partialSaveCard">
+          <div className="warningBox">รูปภาพ: {partialUpload.message}</div>
+          {error && <div className="errorBox">{error}</div>}
+          <div className="sectionActions partialSaveActions">
+            <button type="button" className="button primary" onClick={retryImages} disabled={submitting}>
               {submitting ? 'กำลังอัปโหลด...' : 'ลองอัปโหลดรูปอีกครั้ง'}
             </button>
-            <Link href={`/donations/${id}`} className="secondaryFormLink">ดูข้อมูลที่บันทึกแล้ว</Link>
+            <Link href={`/donations/${id}`} className="button">ดูข้อมูลที่บันทึกแล้ว</Link>
           </div>
         </section>
       </main>
@@ -116,24 +127,24 @@ export default function EditDonationPage() {
   }
 
   return (
-    <main className="formPage">
-      <section className="formCard">
-        <Link href={`/donations/${id}`} className="backLink">← กลับไปหน้ารายละเอียด</Link>
-        <p className="formEyebrow">DONATION</p>
-        <h1>แก้ไขของบริจาค</h1>
-        {donation.images?.length > 0 && (
-          <div className="editImageGrid">
-            {donation.images.map((image) => (
-              <div key={image.id} className="editImageItem">
-                <img src={assetUrl(image.imageUrl)} alt={donation.title} />
-                <button type="button" onClick={() => deleteImage(image.id)}>ลบรูป</button>
-              </div>
-            ))}
-          </div>
-        )}
-        {error && <div className="formError">{error}</div>}
-        <DonationForm donation={donation} onSubmit={submit} submitting={submitting} submitLabel="บันทึกการแก้ไข" />
-      </section>
+    <main className="page createPointPage">
+      <div className="pageTitle">
+        <div>
+          <span className="eyebrow">แก้ไขจุดบริจาค</span>
+          <h1>แก้ไขของบริจาค</h1>
+          <p>ปรับตำแหน่ง รูปภาพ รายละเอียด และช่วงเวลาของโพสต์นี้</p>
+        </div>
+      </div>
+
+      {error && <div className="errorBox">{error}</div>}
+      <DonationForm
+        donation={donation}
+        onSubmit={submit}
+        submitting={submitting}
+        submitLabel="บันทึกการแก้ไข"
+        cancelHref={`/donations/${id}`}
+        onDeleteExistingImage={deleteImage}
+      />
     </main>
   );
 }

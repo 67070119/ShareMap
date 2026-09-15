@@ -4,9 +4,15 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { api, assetUrl } from '../../../lib/api';
-import { formatBangkokDate } from '../../../lib/date';
 import { canNavigateToDonation } from '../../../lib/donationAvailability';
+import { formatBangkokDate } from '../../../lib/date';
 import { useAuth } from '../../../lib/useAuth';
+
+const STATUS_LABELS = {
+  AVAILABLE: 'พร้อมรับ',
+  OUT_OF_STOCK: 'ของหมดแล้ว',
+  EXPIRED: 'หมดช่วงบริจาค',
+};
 
 export default function DonationDetailPage() {
   const { id } = useParams();
@@ -16,15 +22,17 @@ export default function DonationDetailPage() {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [reported, setReported] = useState(false);
+  const [selectedImageId, setSelectedImageId] = useState(null);
+  const [photoOpen, setPhotoOpen] = useState(false);
 
   useEffect(() => {
     let active = true;
     api(`/api/donations/${id}`)
       .then((result) => {
-        if (active) {
-          setDonation(result);
-          setError('');
-        }
+        if (!active) return;
+        setDonation(result);
+        setSelectedImageId(result.images?.[0]?.id ?? null);
+        setError('');
       })
       .catch((requestError) => {
         if (active) setError(requestError.message || 'โหลดข้อมูลไม่สำเร็จ');
@@ -38,6 +46,24 @@ export default function DonationDetailPage() {
     }, 0);
     return () => clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    if (!photoOpen) return undefined;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') setPhotoOpen(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [photoOpen]);
+
+  const selectedImage = donation?.images?.length
+    ? donation.images.find((image) => image.id === selectedImageId) || donation.images[0]
+    : null;
 
   async function markOutOfStock() {
     if (!window.confirm('ยืนยันว่าของหมดแล้ว? จุดนี้จะไม่แสดงบน Map')) return;
@@ -63,52 +89,119 @@ export default function DonationDetailPage() {
     }
   }
 
-  if (error && !donation) return <main className="detailPage"><div className="detailCard"><p>{error}</p><Link href="/">กลับไปหน้า Map</Link></div></main>;
-  if (!donation) return <main className="detailPage"><div className="detailCard"><p>กำลังโหลด...</p></div></main>;
+  if (error && !donation) {
+    return <main className="page narrow"><div className="errorBox">{error}</div><Link href="/" className="button">← กลับแผนที่</Link></main>;
+  }
+
+  if (!donation) return <main className="centerState">กำลังโหลดรายละเอียด...</main>;
 
   const canNavigate = canNavigateToDonation(donation);
   const isOwner = user?.id === donation.ownerId;
   const reportHref = user ? `/donations/${id}/report` : `/login?next=/donations/${id}/report`;
+  const selectedImageUrl = selectedImage ? assetUrl(selectedImage.imageUrl) : '';
+  const statusLabel = STATUS_LABELS[donation.status] || donation.status;
 
   return (
-    <main className="detailPage">
-      <article className="detailCard">
-        <Link href="/" className="backLink">← กลับไปหน้า Map</Link>
-        {reported && <div className="reportSuccess">ส่งรายงานให้ Admin ตรวจสอบแล้ว</div>}
-        {error && <div className="formError">{error}</div>}
-
-        {donation.images?.length > 0 && (
-          <div className="donationGallery">
-            {donation.images.map((image) => <img key={image.id} src={assetUrl(image.imageUrl)} alt={donation.title} />)}
-          </div>
-        )}
-
-        <div className="detailStatusRow">
-          <span className="detailCategory">{donation.category}</span>
-          <span className={`donationStatus ${donation.status.toLowerCase()}`}>{donation.status}</span>
+    <main className="page pointDetailPage">
+      <header className="pointDetailHeader">
+        <div>
+          <span className="eyebrow">รายละเอียดของบริจาค</span>
+          <h1>{donation.title}</h1>
+          <p>บริจาคโดย {donation.owner?.name || 'ผู้ใช้ OGTB'} · เปิดถึง {formatBangkokDate(donation.endDate)}</p>
         </div>
-        <h1>{donation.title}</h1>
-        {donation.description && <p>{donation.description}</p>}
-        <dl className="detailGrid">
-          <div><dt>จำนวน</dt><dd>{donation.quantity}</dd></div>
-          <div><dt>ผู้บริจาค</dt><dd>{donation.owner?.name || '-'}</dd></div>
-          <div><dt>จุดรับของ</dt><dd>{donation.address || `${donation.latitude}, ${donation.longitude}`}</dd></div>
-          <div><dt>บริจาคถึง</dt><dd>{formatBangkokDate(donation.endDate)}</dd></div>
-        </dl>
+        <Link href="/" className="button pointBackButton">← กลับแผนที่</Link>
+      </header>
 
-        <div className="detailActions">
-          {canNavigate && <Link href={`/donations/${id}/navigate`} className="navigateAction">นำทางไปจุดบริจาค</Link>}
-          {isOwner ? (
+      {error && <div className="errorBox">{error}</div>}
+      {reported && <div className="successBox">ส่งรายงานให้ Admin ตรวจสอบแล้ว</div>}
+
+      <section className="card pointHeroCard">
+        <div className="pointPhotoPanel">
+          {selectedImageUrl ? (
             <>
-              <Link href={`/donations/${id}/edit`} className="reportAction">แก้ไขโพสต์</Link>
-              {donation.status === 'AVAILABLE' && <button type="button" className="ownerStockButton" disabled={busy} onClick={markOutOfStock}>ของหมดแล้ว</button>}
-              <button type="button" className="ownerDeleteButton" disabled={busy} onClick={removeDonation}>ลบโพสต์</button>
+              <button type="button" className="pointPhotoButton" onClick={() => setPhotoOpen(true)} aria-label="เปิดรูปของบริจาคแบบเต็มจอ">
+                <img className="pointHeroImage" src={selectedImageUrl} alt={donation.title} />
+                <span className="pointPhotoHint">ดูรูปเต็ม</span>
+              </button>
+              {donation.images.length > 1 && (
+                <div className="pointThumbRow" aria-label="เลือกรูปของบริจาค">
+                  {donation.images.map((image) => (
+                    <button
+                      key={image.id}
+                      type="button"
+                      className={`pointThumbButton${image.id === selectedImage?.id ? ' isActive' : ''}`}
+                      onClick={() => setSelectedImageId(image.id)}
+                      aria-label="เลือกรูปนี้"
+                    >
+                      <img src={assetUrl(image.imageUrl)} alt="" />
+                    </button>
+                  ))}
+                </div>
+              )}
             </>
           ) : (
-            <Link href={reportHref} className="reportAction">รายงานโพสต์</Link>
+            <div className="pointHeroFallback"><span>ไม่มีรูปภาพ</span></div>
           )}
         </div>
-      </article>
+
+        <div className="pointHeroContent">
+          <div className="pointHeroTopline">
+            <span className="pointSeenBadge">{donation.category}</span>
+            <span className="pointStatusBadge">{statusLabel}</span>
+          </div>
+          <h2>จำนวน {donation.quantity}</h2>
+          <p className="pointDescription">{donation.description || 'ไม่มีรายละเอียดเพิ่มเติม'}</p>
+
+          <div className="pointMetaGrid">
+            <div className="pointMetaItem"><span>เริ่มบริจาค</span><strong>{formatBangkokDate(donation.startDate)}</strong></div>
+            <div className="pointMetaItem"><span>สิ้นสุด</span><strong>{formatBangkokDate(donation.endDate)}</strong></div>
+            <div className="pointMetaItem"><span>จุดรับของ</span><strong>{donation.address || 'ตำแหน่งบนแผนที่'}</strong></div>
+          </div>
+
+          {canNavigate && <Link href={`/donations/${id}/navigate`} className="button primary block pointNavigateButton">นำทางไปจุดนี้</Link>}
+        </div>
+      </section>
+
+      <div className="pointActionGrid">
+        <section className="card pointInfoCard">
+          <div className="pointSectionHeading">
+            <div><span>ข้อมูลโพสต์</span><h3>รายละเอียดการรับของ</h3></div>
+          </div>
+          <div className="pointDetailList">
+            <div><span>ผู้บริจาค</span><strong>{donation.owner?.name || '-'}</strong></div>
+            <div><span>ประเภท</span><strong>{donation.category}</strong></div>
+            <div><span>สถานะ</span><strong>{statusLabel}</strong></div>
+          </div>
+        </section>
+
+        <section className="card pointManageCard">
+          <div className="pointSectionHeading">
+            <div><span>{isOwner ? 'จัดการโพสต์' : 'ความปลอดภัย'}</span><h3>{isOwner ? 'การจัดการของบริจาค' : 'พบข้อมูลมีปัญหา?'}</h3></div>
+          </div>
+          {isOwner ? (
+            <div className="pointManageActions">
+              <Link href={`/donations/${id}/edit`} className="button soft">แก้ไขโพสต์</Link>
+              {donation.status === 'AVAILABLE' && <button type="button" className="button soft" disabled={busy} onClick={markOutOfStock}>ของหมดแล้ว</button>}
+              <button type="button" className="button danger" disabled={busy} onClick={removeDonation}>ลบโพสต์</button>
+            </div>
+          ) : (
+            <>
+              <p className="pointManageCopy">หากโพสต์มีข้อมูลหลอกลวง สิ่งของอันตราย หรือเนื้อหาไม่เหมาะสม สามารถส่งให้ Admin ตรวจสอบได้</p>
+              <Link href={reportHref} className="button pointReportButton">รายงานโพสต์</Link>
+            </>
+          )}
+        </section>
+      </div>
+
+      {photoOpen && selectedImageUrl && (
+        <div className="pointLightbox" role="dialog" aria-modal="true" aria-label="รูปของบริจาคแบบเต็มจอ" onMouseDown={(event) => { if (event.target === event.currentTarget) setPhotoOpen(false); }}>
+          <button type="button" className="pointLightboxClose" onClick={() => setPhotoOpen(false)} aria-label="ปิดรูป">
+            <span className="pointLightboxCloseIcon" aria-hidden="true" />
+            <span>ปิด</span>
+          </button>
+          <img src={selectedImageUrl} alt={`${donation.title} แบบเต็มจอ`} />
+        </div>
+      )}
     </main>
   );
 }

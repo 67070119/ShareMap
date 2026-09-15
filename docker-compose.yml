@@ -29,6 +29,7 @@ services:
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
       DATABASE_URL: postgresql://ogtb:ogtb@db:5432/ogtb_donation_map?schema=public
       ROUTING_BASE_URL: ${ROUTING_BASE_URL:-https://router.project-osrm.org}
+      DISABLE_AUTO_SELECT_FAMILY: ${DISABLE_AUTO_SELECT_FAMILY:-true}
       JWT_SECRET: ${JWT_SECRET:-local-development-only-secret}
       SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-}
       SEED_USER_PASSWORD: ${SEED_USER_PASSWORD:-}
@@ -36,6 +37,7 @@ services:
     depends_on:
       db:
         condition: service_healthy
+
   frontend:
     image: node:24-alpine
     working_dir: /app

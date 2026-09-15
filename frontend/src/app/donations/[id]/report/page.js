@@ -53,14 +53,24 @@ export default function ReportDonationPage() {
     }
   }
 
-  if (loading || !user) return <main className="reportPage"><section className="reportCard"><p>กำลังตรวจสอบบัญชี...</p></section></main>;
+  if (loading || !user) return <main className="centerState">กำลังตรวจสอบบัญชี...</main>;
 
   return (
-    <main className="reportPage">
-      <form className="reportCard" onSubmit={submit}>
-        <Link href={`/donations/${id}`} className="backLink">← กลับไปหน้ารายละเอียด</Link>
-        <h1>รายงานโพสต์</h1>
-        <p>เลือกเหตุผลที่ตรงกับปัญหาของโพสต์นี้ ข้อมูลจะถูกส่งให้ Admin ตรวจสอบ</p>
+    <main className="page reportPortPage">
+      <header className="reportPortHeader">
+        <div>
+          <span className="eyebrow">ความปลอดภัยของชุมชน</span>
+          <h1>รายงานโพสต์</h1>
+          <p>เลือกเหตุผลที่ตรงกับปัญหา ข้อมูลจะถูกส่งให้ Admin ตรวจสอบ</p>
+        </div>
+        <Link href={`/donations/${id}`} className="button">← กลับรายละเอียด</Link>
+      </header>
+
+      <form className="card reportPortCard" onSubmit={submit}>
+        <div className="pointSectionHeading">
+          <div><span>เหตุผล</span><h3>เลือกเหตุผลที่ต้องการรายงาน</h3></div>
+        </div>
+
         <div className="reportReasonList">
           {REASONS.map(([value, label]) => (
             <label key={value} className={reason === value ? 'isSelected' : ''}>
@@ -69,13 +79,26 @@ export default function ReportDonationPage() {
             </label>
           ))}
         </div>
-        <label className="reportDescription">
-          รายละเอียดเพิ่มเติม
-          <textarea value={description} onChange={(event) => setDescription(event.target.value)} maxLength={1000} rows={5} placeholder="อธิบายเพิ่มเติมได้ หากมีข้อมูลที่ช่วยให้ Admin ตรวจสอบง่ายขึ้น" />
-          <small>{description.length}/1000</small>
-        </label>
-        {error && <div className="formError" role="alert">{error}</div>}
-        <button className="reportSubmitButton" type="submit" disabled={submitting}>{submitting ? 'กำลังส่ง...' : 'ส่งรายงาน'}</button>
+
+        <div className="field">
+          <label htmlFor="report-description">รายละเอียดเพิ่มเติม</label>
+          <textarea
+            id="report-description"
+            value={description}
+            onChange={(event) => setDescription(event.target.value)}
+            maxLength={1000}
+            rows={5}
+            placeholder="อธิบายเพิ่มเติมได้ หากมีข้อมูลที่ช่วยให้ Admin ตรวจสอบง่ายขึ้น"
+          />
+          <small className="reportDescriptionCounter">{description.length}/1000</small>
+        </div>
+
+        {error && <div className="errorBox" role="alert">{error}</div>}
+
+        <div className="reportPortActions">
+          <Link href={`/donations/${id}`} className="button">ยกเลิก</Link>
+          <button className="button primary" type="submit" disabled={submitting}>{submitting ? 'กำลังส่ง...' : 'ส่งรายงาน'}</button>
+        </div>
       </form>
     </main>
   );

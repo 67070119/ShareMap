@@ -1,18 +1,16 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
+import CategoryFilter from '../components/map/CategoryFilter';
 import RadiusFilter from '../components/map/RadiusFilter';
 import { api } from '../lib/api';
-import { useAuth } from '../lib/useAuth';
 
 const DonationMap = dynamic(() => import('../components/map/DonationMap'), { ssr: false });
 const DEFAULT_RADIUS_KM = 5;
 const SEARCH_DEBOUNCE_MS = 300;
 
 export default function HomePage() {
-  const { user, loading: authLoading, logout } = useAuth();
   const [userPosition, setUserPosition] = useState(null);
   const [donations, setDonations] = useState([]);
   const [radiusKm, setRadiusKm] = useState(DEFAULT_RADIUS_KM);
@@ -71,43 +69,28 @@ export default function HomePage() {
     return () => clearTimeout(timer);
   }, [userPosition, radiusKm, category]);
 
-  async function handleLogout() {
-    await logout();
-  }
-
   return (
-    <main className="mapPage">
+    <main className="mapShell">
       <DonationMap donations={donations} userPosition={userPosition} radiusKm={radiusKm} />
 
-      <header className="mapTopBar">
-        <div>
-          <span className="mapBrandEyebrow">OGTB</span>
-          <strong>Donation Map</strong>
-        </div>
-        <div className="mapTopActions">
-          {!authLoading && user ? (
-            <>
-              <Link href="/donations/new" className="mapActionButton">+ บริจาค</Link>
-              {user.role === 'ADMIN' && <Link href="/admin" className="dashboardButton">Dashboard</Link>}
-              <button type="button" className="mapGhostButton" onClick={handleLogout}>ออกจากระบบ</button>
-            </>
-          ) : !authLoading ? (
-            <>
-              <Link href="/login" className="mapGhostLink">เข้าสู่ระบบ</Link>
-              <Link href="/register" className="mapActionButton">สมัครสมาชิก</Link>
-            </>
-          ) : null}
-          <div className="mapCountBadge">{donations.length} จุด</div>
-        </div>
-      </header>
+      <div className="mapSummary" aria-live="polite">
+        <span className="mapSummaryDot" aria-hidden="true" />
+        <strong>{donations.length}</strong>
+        <span>{userPosition ? 'จุดในรัศมี' : 'จุดบริจาค'}</span>
+      </div>
 
-      <RadiusFilter radiusKm={radiusKm} onRadiusChange={setRadiusKm} category={category} onCategoryChange={setCategory} disabled={!userPosition} />
+      {(loading || error) && (
+        <div className={`mapStatus${error ? ' mapStatusError' : ''}`} role="status">
+          {error || 'กำลังอัปเดตจุดบริจาค...'}
+        </div>
+      )}
 
-      <button className="locateButton" type="button" onClick={locate} disabled={locating} aria-label="ค้นหาตำแหน่งปัจจุบัน">
-        {locating ? '…' : '◎'}
+      <button className="mapFloatButton mapLocateButton" type="button" onClick={locate} aria-label="ตำแหน่งฉัน" disabled={locating}>
+        {locating ? <span className="mapLocateSpinner" aria-hidden="true" /> : <span className="mapLocateGlyph" aria-hidden="true" />}
       </button>
 
-      {(loading || error) && <div className={`mapStatus ${error ? 'isError' : ''}`} role="status">{error || 'กำลังค้นหาจุดบริจาค...'}</div>}
+      <CategoryFilter value={category} onChange={setCategory} disabled={!userPosition} />
+      <RadiusFilter value={radiusKm} onChange={setRadiusKm} disabled={!userPosition} locating={locating} />
     </main>
   );
 }

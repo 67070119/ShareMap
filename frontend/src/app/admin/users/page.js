@@ -8,11 +8,13 @@ export default function AdminUsersPage() {
   const [users, setUsers] = useState([]);
   const [error, setError] = useState('');
   const [busyId, setBusyId] = useState(null);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     api('/api/admin/users')
       .then(setUsers)
-      .catch((requestError) => setError(requestError.message || 'โหลด Users ไม่สำเร็จ'));
+      .catch((requestError) => setError(requestError.message || 'โหลด Users ไม่สำเร็จ'))
+      .finally(() => setLoaded(true));
   }, []);
 
   async function toggleUser(user) {
@@ -32,65 +34,47 @@ export default function AdminUsersPage() {
   }
 
   return (
-    <main className="adminPage">
+    <div className="adminPortShell">
       <AdminNav />
-      <section className="adminContent">
-        <div className="adminHeading">
+      <main className="page adminPortPage">
+        <header className="pageTitle">
           <div>
-            <span>ADMIN</span>
-            <h1>Users</h1>
+            <span className="eyebrow">ADMIN</span>
+            <h1>ผู้ใช้</h1>
+            <p>ตรวจสอบ Role กิจกรรมในระบบ และระงับหรือเปิดใช้งานบัญชีที่มีปัญหา</p>
           </div>
-          <p>ดูและจัดการสถานะบัญชีผู้ใช้</p>
-        </div>
+          <span className="adminPortCount"><strong>{users.length}</strong><small>บัญชี</small></span>
+        </header>
 
-        {error && <div className="adminError">{error}</div>}
+        {error && <div className="errorBox">{error}</div>}
+        {!loaded && !error && <div className="centerState adminPortLoading">กำลังโหลดข้อมูลผู้ใช้...</div>}
 
-        <div className="adminTableWrap">
-          <table className="adminTable">
-            <thead>
-              <tr>
-                <th>ผู้ใช้</th>
-                <th>Role</th>
-                <th>Donation</th>
-                <th>Report</th>
-                <th>สถานะ</th>
-                <th>จัดการ</th>
-              </tr>
-            </thead>
-            <tbody>
+        {loaded && !error && (
+          <section className="card adminPortListCard">
+            <div className="pointSectionHeading"><div><span>บัญชีในระบบ</span><h3>Users</h3></div></div>
+            <div className="adminPortList">
               {users.map((user) => (
-                <tr key={user.id}>
-                  <td>
+                <article className="listRow adminPortListRow" key={user.id}>
+                  <div className="listIcon adminPortAvatar" aria-hidden="true">{user.name?.trim()?.[0]?.toUpperCase() || 'U'}</div>
+                  <div className="adminPortListCopy">
                     <strong>{user.name}</strong>
-                    <small>{user.email}</small>
-                  </td>
-                  <td>{user.role}</td>
-                  <td>{user._count?.donations ?? 0}</td>
-                  <td>{user._count?.reports ?? 0}</td>
-                  <td>
-                    <span className={`statusPill ${user.isActive ? 'isActive' : 'isSuspended'}`}>
-                      {user.isActive ? 'ACTIVE' : 'SUSPENDED'}
-                    </span>
-                  </td>
-                  <td>
-                    <button
-                      type="button"
-                      className={user.isActive ? 'adminDangerButton' : 'adminSecondaryButton'}
-                      onClick={() => toggleUser(user)}
-                      disabled={busyId === user.id}
-                    >
-                      {busyId === user.id ? '...' : user.isActive ? 'ระงับบัญชี' : 'เปิดใช้งาน'}
-                    </button>
-                  </td>
-                </tr>
+                    <small className="muted">{user.email}</small>
+                    <div className="adminPortChips">
+                      <span className="chip">{user.role}</span>
+                      <span className={`chip ${user.isActive ? 'adminChipActive' : 'adminChipDanger'}`}>{user.isActive ? 'ACTIVE' : 'SUSPENDED'}</span>
+                    </div>
+                    <small className="muted">Donation {user._count?.donations ?? 0} · Report {user._count?.reports ?? 0}</small>
+                  </div>
+                  <button type="button" className={`button ${user.isActive ? 'danger' : 'soft'}`} onClick={() => toggleUser(user)} disabled={busyId === user.id}>
+                    {busyId === user.id ? 'กำลังบันทึก...' : user.isActive ? 'ระงับบัญชี' : 'เปิดใช้งาน'}
+                  </button>
+                </article>
               ))}
-              {users.length === 0 && (
-                <tr><td colSpan="6">ไม่พบข้อมูลผู้ใช้</td></tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </section>
-    </main>
+              {users.length === 0 && <div className="empty">ไม่พบข้อมูลผู้ใช้</div>}
+            </div>
+          </section>
+        )}
+      </main>
+    </div>
   );
 }

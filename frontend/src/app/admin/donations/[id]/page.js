@@ -60,92 +60,84 @@ export default function AdminDonationDetailPage() {
   }
 
   return (
-    <main className="adminPage">
+    <div className="adminPortShell">
       <AdminNav />
-      <section className="adminContent">
-        <div className="adminHeading">
+      <main className="page adminPortPage">
+        <header className="pageTitle">
           <div>
-            <span>ADMIN</span>
-            <h1>Donation Detail</h1>
+            <span className="eyebrow">ADMIN · DONATION</span>
+            <h1>{donation?.title || 'Donation Detail'}</h1>
+            {donation && <p>{donation.category} · เจ้าของ {donation.owner?.name || '-'}</p>}
           </div>
-          <Link href="/admin/donations" className="adminRowLink">← กลับ Donations</Link>
-        </div>
+          <Link href="/admin/donations" className="button">← กลับ Donations</Link>
+        </header>
 
-        {error && <div className="adminError">{error}</div>}
-        {!donation && !error && <p>กำลังโหลด...</p>}
+        {error && <div className="errorBox">{error}</div>}
+        {!donation && !error && <div className="centerState adminPortLoading">กำลังโหลด Donation...</div>}
 
         {donation && (
-          <div className="adminReportDetail">
-            <section>
-              <div className="adminDetailTitleRow">
-                <div>
-                  <span className={`statusPill ${donation.isHidden ? 'isSuspended' : 'isActive'}`}>
-                    {donation.isHidden ? 'HIDDEN' : 'VISIBLE'}
-                  </span>
-                  <h2>{donation.title}</h2>
+          <>
+            <section className="card">
+              <div className="pointSectionHeading">
+                <div><span>ข้อมูลโพสต์</span><h3>{donation.title}</h3></div>
+                <div className="adminPortChips">
+                  <span className={`chip ${donation.isHidden ? 'adminChipDanger' : 'adminChipActive'}`}>{donation.isHidden ? 'HIDDEN' : 'VISIBLE'}</span>
+                  <span className="chip">{donation.status}</span>
                 </div>
-                <span className="donationStatus">{donation.status}</span>
               </div>
 
               {donation.images?.length > 0 && (
-                <div className="adminDonationGallery">
-                  {donation.images.map((image) => (
-                    <img key={image.id} src={assetUrl(image.imageUrl)} alt={donation.title} />
-                  ))}
+                <div className="adminPortGallery">
+                  {donation.images.map((image) => <img key={image.id} src={assetUrl(image.imageUrl)} alt={donation.title} />)}
                 </div>
               )}
 
-              <p>{donation.description || 'ไม่มีรายละเอียดเพิ่มเติม'}</p>
-              <dl className="adminDetailGrid">
-                <div><dt>ประเภท</dt><dd>{donation.category}</dd></div>
-                <div><dt>จำนวน</dt><dd>{donation.quantity}</dd></div>
-                <div><dt>วันที่เริ่ม</dt><dd>{formatBangkokDate(donation.startDate)}</dd></div>
-                <div><dt>วันที่สิ้นสุด</dt><dd>{formatBangkokDate(donation.endDate)}</dd></div>
-                <div><dt>จุดรับของ</dt><dd>{donation.address || '-'}</dd></div>
-                <div><dt>พิกัด</dt><dd>{donation.latitude}, {donation.longitude}</dd></div>
-              </dl>
+              <p className="adminPortDescription">{donation.description || 'ไม่มีรายละเอียดเพิ่มเติม'}</p>
+              <div className="metaGrid adminPortMetaGrid">
+                <div className="metaItem"><span>ประเภท</span><strong>{donation.category}</strong></div>
+                <div className="metaItem"><span>จำนวน</span><strong>{donation.quantity}</strong></div>
+                <div className="metaItem"><span>วันที่เริ่ม</span><strong>{formatBangkokDate(donation.startDate)}</strong></div>
+                <div className="metaItem"><span>วันที่สิ้นสุด</span><strong>{formatBangkokDate(donation.endDate)}</strong></div>
+                <div className="metaItem adminPortMetaWide"><span>จุดรับของ</span><strong>{donation.address || '-'}</strong></div>
+              </div>
             </section>
 
-            <section>
-              <h2>เจ้าของโพสต์</h2>
-              <dl className="adminDetailGrid">
-                <div><dt>ชื่อ</dt><dd>{donation.owner?.name || '-'}</dd></div>
-                <div><dt>Email</dt><dd>{donation.owner?.email || '-'}</dd></div>
-                <div><dt>สถานะบัญชี</dt><dd>{donation.owner?.isActive ? 'ACTIVE' : 'SUSPENDED'}</dd></div>
-                <div><dt>Reports</dt><dd>{donation._count?.reports ?? 0}</dd></div>
-              </dl>
+            <section className="card">
+              <div className="pointSectionHeading"><div><span>เจ้าของโพสต์</span><h3>{donation.owner?.name || '-'}</h3></div></div>
+              <div className="metaGrid adminPortMetaGrid">
+                <div className="metaItem"><span>Email</span><strong>{donation.owner?.email || '-'}</strong></div>
+                <div className="metaItem"><span>สถานะบัญชี</span><strong>{donation.owner?.isActive ? 'ACTIVE' : 'SUSPENDED'}</strong></div>
+                <div className="metaItem"><span>Reports</span><strong>{donation._count?.reports ?? 0}</strong></div>
+              </div>
             </section>
 
-            <section>
-              <h2>Reports ของ Donation นี้</h2>
-              {donation.reports?.length ? (
-                <div className="adminDonationReports">
-                  {donation.reports.map((report) => (
-                    <Link key={report.id} href={`/admin/reports/${report.id}`} className="adminDonationReportItem">
-                      <div>
-                        <strong>{report.reason}</strong>
-                        <span>{report.reporter?.name || '-'} · {report.status}</span>
-                      </div>
-                      <span>ดูรายละเอียด →</span>
-                    </Link>
-                  ))}
-                </div>
-              ) : (
-                <p>ยังไม่มี Report สำหรับโพสต์นี้</p>
-              )}
+            <section className="card">
+              <div className="pointSectionHeading"><div><span>การรายงาน</span><h3>Reports ของ Donation นี้</h3></div></div>
+              <div className="adminPortList">
+                {donation.reports?.length ? donation.reports.map((report) => (
+                  <Link key={report.id} href={`/admin/reports/${report.id}`} className="historyItem adminPortHistoryLink">
+                    <strong>{report.reason}</strong>
+                    <small>{report.reporter?.name || '-'} · {report.status}</small>
+                    <span>ดูรายละเอียด →</span>
+                  </Link>
+                )) : <div className="empty">ยังไม่มี Report สำหรับโพสต์นี้</div>}
+              </div>
             </section>
 
-            <div className="adminReportActions">
-              <button type="button" className="adminSecondaryButton" onClick={toggleVisibility} disabled={Boolean(busy)}>
-                {donation.isHidden ? 'แสดง Donation' : 'ซ่อน Donation'}
-              </button>
-              <button type="button" className="adminDangerButton" onClick={removeDonation} disabled={Boolean(busy)}>
-                ลบ Donation
-              </button>
-            </div>
-          </div>
+            <section className="card">
+              <div className="pointSectionHeading"><div><span>การจัดการ</span><h3>จัดการ Donation</h3></div></div>
+              <div className="sectionActions">
+                <button type="button" className="button" onClick={toggleVisibility} disabled={Boolean(busy)}>
+                  {busy === 'visibility' ? 'กำลังบันทึก...' : donation.isHidden ? 'แสดง Donation' : 'ซ่อน Donation'}
+                </button>
+                <button type="button" className="button danger" onClick={removeDonation} disabled={Boolean(busy)}>
+                  {busy === 'delete' ? 'กำลังลบ...' : 'ลบ Donation'}
+                </button>
+              </div>
+            </section>
+          </>
         )}
-      </section>
-    </main>
+      </main>
+    </div>
   );
 }

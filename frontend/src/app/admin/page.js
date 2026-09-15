@@ -27,39 +27,33 @@ export default function AdminDashboardPage() {
   }, []);
 
   return (
-    <main className="adminPage">
+    <div className="adminPortShell">
       <AdminNav />
-      <section className="adminContent">
-        <div className="adminHeading">
+      <main className="page adminPortPage">
+        <header className="pageTitle">
           <div>
-            <span>ADMIN</span>
+            <span className="eyebrow">ADMIN</span>
             <h1>Dashboard</h1>
+            <p>ภาพรวมสำหรับตรวจสอบผู้ใช้ ของบริจาค และรายงานที่ต้องจัดการ</p>
           </div>
-          <p>จัดการผู้ใช้ โพสต์บริจาค และรายงานในระบบ</p>
-        </div>
+        </header>
 
-        {error && <div className="adminError">{error}</div>}
-
-        {!error && !summary && <p>กำลังโหลด...</p>}
+        {error && <div className="errorBox">{error}</div>}
+        {!error && !summary && <div className="centerState adminPortLoading">กำลังโหลดข้อมูล Dashboard...</div>}
 
         {summary && (
-          <div className="adminStatGrid">
-            <Link href="/admin/users" className="adminStatCard">
-              <span>Users</span>
-              <strong>{summary.users}</strong>
-            </Link>
-            <Link href="/admin/donations" className="adminStatCard">
-              <span>Donations</span>
-              <strong>{summary.donations}</strong>
-            </Link>
-            <Link href="/admin/reports" className="adminStatCard">
-              <span>Reports</span>
-              <strong>{summary.reports}</strong>
-              <small>{summary.pendingReports} รอตรวจสอบ</small>
-            </Link>
-          </div>
+          <section className="card">
+            <div className="pointSectionHeading">
+              <div><span>ภาพรวมระบบ</span><h3>ข้อมูลที่ต้องดูแล</h3></div>
+            </div>
+            <div className="stats adminPortStats">
+              <Link href="/admin/users" className="stat adminPortStat"><span>ผู้ใช้ทั้งหมด</span><strong>{summary.users}</strong><small>จัดการบัญชี →</small></Link>
+              <Link href="/admin/donations" className="stat adminPortStat"><span>ของบริจาค</span><strong>{summary.donations}</strong><small>ตรวจสอบโพสต์ →</small></Link>
+              <Link href="/admin/reports" className="stat adminPortStat"><span>รายงาน</span><strong>{summary.reports}</strong><small>{summary.pendingReports} รายการรอตรวจสอบ →</small></Link>
+            </div>
+          </section>
         )}
-      </section>
-    </main>
+      </main>
+    </div>
   );
 }

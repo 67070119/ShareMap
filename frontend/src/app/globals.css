@@ -369,66 +369,6 @@ a {
   text-decoration: none;
 }
 
-.navigationPage {
-  position: relative;
-  min-height: 100vh;
-  overflow: hidden;
-}
-
-.navigationMapCanvas {
-  width: 100vw;
-  height: 100vh;
-}
-
-.navigationHeader {
-  position: absolute;
-  z-index: 900;
-  top: 16px;
-  left: 16px;
-  right: 16px;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  max-width: 560px;
-  padding: 12px 14px;
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.96);
-  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
-}
-
-.navigationHeader a {
-  color: #2563eb;
-  font-weight: 700;
-  text-decoration: none;
-}
-
-.navigationSummary {
-  position: absolute;
-  z-index: 900;
-  left: 16px;
-  bottom: 16px;
-  width: min(430px, calc(100vw - 32px));
-  padding: 16px;
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.97);
-  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.16);
-}
-
-.navigationSummary div {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 7px 0;
-}
-
-.navigationSummary span,
-.navigationSummary p {
-  color: #64748b;
-}
-
-.navigationSummary p {
-  margin: 10px 0 0;
-}
 
 .detailActions {
   display: grid;

@@ -1,6 +1,13 @@
+import net from 'node:net';
 import { app } from './app.js';
 import { connectDatabase, disconnectDatabase } from './config/database.js';
 import { env } from './config/env.js';
+// Node 24's automatic address-family selection can intermittently time out
+// against the public OSRM endpoint from inside Docker. Keep this workaround
+// opt-in so other environments and outbound services retain Node's defaults.
+if (env.disableAutoSelectFamily && typeof net.setDefaultAutoSelectFamily === 'function') {
+  net.setDefaultAutoSelectFamily(false);
+}
 
 async function start() {
   await connectDatabase();

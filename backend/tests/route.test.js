@@ -96,12 +96,56 @@ test('route service normalizes routing provider response', async () => {
   assert.equal(route.steps[0].modifier, 'left');
 });
 
-test('route service handles provider failure', async () => {
-  const fakeFetch = async () => ({ ok: false, status: 503 });
+test('route service retries transient provider failure before returning unavailable', async () => {
+  let attempts = 0;
+  const fakeFetch = async () => {
+    attempts += 1;
+    return { ok: false, status: 503 };
+  };
+
   await assert.rejects(
     () => getDrivingRoute({ fromLat: 13.7, fromLng: 100.7, toLat: 13.8, toLng: 100.8 }, fakeFetch),
     (error) => error.status === 502 && error.code === 'ROUTING_UNAVAILABLE',
   );
+  assert.equal(attempts, 2);
+});
+
+test('route service recovers when a transient network failure succeeds on retry', async () => {
+  let attempts = 0;
+  let receivedSignal = false;
+  const fakeFetch = async (_url, options) => {
+    attempts += 1;
+    receivedSignal = options.signal instanceof AbortSignal;
+    if (attempts === 1) throw new TypeError('temporary network failure');
+    return { ok: true, json: async () => samplePayload };
+  };
+
+  const route = await getDrivingRoute({
+    fromLat: 13.7,
+    fromLng: 100.7,
+    toLat: 13.8,
+    toLng: 100.8,
+  }, fakeFetch);
+
+  assert.equal(attempts, 2);
+  assert.equal(receivedSignal, true);
+  assert.equal(route.distanceMeters, samplePayload.routes[0].distance);
+});
+
+test('route service returns a distinct timeout error after retrying', async () => {
+  let attempts = 0;
+  const fakeFetch = async () => {
+    attempts += 1;
+    const error = new Error('routing timeout');
+    error.name = 'TimeoutError';
+    throw error;
+  };
+
+  await assert.rejects(
+    () => getDrivingRoute({ fromLat: 13.7, fromLng: 100.7, toLat: 13.8, toLng: 100.8 }, fakeFetch),
+    (error) => error.status === 504 && error.code === 'ROUTING_TIMEOUT',
+  );
+  assert.equal(attempts, 2);
 });
 
 test('donation route uses destination stored in database', async () => {

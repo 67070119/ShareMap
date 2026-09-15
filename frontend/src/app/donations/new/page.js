@@ -54,24 +54,28 @@ export default function NewDonationPage() {
   }
 
   if (loading || !user) {
-    return <main className="formPage"><section className="formCard"><p>กำลังตรวจสอบบัญชี...</p></section></main>;
+    return <main className="page createPointPage"><div className="centerState">กำลังตรวจสอบบัญชี...</div></main>;
   }
 
   if (partialUpload) {
     return (
-      <main className="formPage">
-        <section className="formCard partialSaveCard">
-          <p className="formEyebrow">DONATION SAVED</p>
-          <h1>สร้างโพสต์เรียบร้อยแล้ว</h1>
-          <p className="formDescription">ข้อมูล Donation ถูกบันทึกแล้ว แต่รูปภาพอัปโหลดไม่สำเร็จ จึงจะไม่สร้างโพสต์ซ้ำเมื่อกดลองใหม่</p>
-          <div className="partialSaveNotice">รูปภาพ: {partialUpload.message}</div>
-          {error && <div className="formError">{error}</div>}
-          <div className="partialSaveActions">
-            <button type="button" className="primaryFormButton" onClick={retryImages} disabled={submitting}>
+      <main className="page narrow">
+        <div className="pageTitle">
+          <div>
+            <span className="eyebrow">บันทึกโพสต์แล้ว</span>
+            <h1>อัปโหลดรูปยังไม่สำเร็จ</h1>
+            <p>ข้อมูลของบริจาคถูกสร้างแล้ว การลองใหม่จะไม่สร้างโพสต์ซ้ำ</p>
+          </div>
+        </div>
+        <section className="card partialSaveCard">
+          <div className="warningBox">รูปภาพ: {partialUpload.message}</div>
+          {error && <div className="errorBox">{error}</div>}
+          <div className="sectionActions partialSaveActions">
+            <button type="button" className="button primary" onClick={retryImages} disabled={submitting}>
               {submitting ? 'กำลังอัปโหลด...' : 'ลองอัปโหลดรูปอีกครั้ง'}
             </button>
-            <Link href={`/donations/${partialUpload.donation.id}/edit`} className="secondaryFormLink">ไปหน้าแก้ไข</Link>
-            <Link href={`/donations/${partialUpload.donation.id}`} className="secondaryFormLink">ดูโพสต์ที่สร้างแล้ว</Link>
+            <Link href={`/donations/${partialUpload.donation.id}/edit`} className="button soft">ไปหน้าแก้ไข</Link>
+            <Link href={`/donations/${partialUpload.donation.id}`} className="button">ดูโพสต์ที่สร้างแล้ว</Link>
           </div>
         </section>
       </main>
@@ -79,15 +83,17 @@ export default function NewDonationPage() {
   }
 
   return (
-    <main className="formPage">
-      <section className="formCard">
-        <Link href="/" className="backLink">← กลับไปหน้า Map</Link>
-        <p className="formEyebrow">DONATION</p>
-        <h1>เพิ่มของบริจาค</h1>
-        <p className="formDescription">กรอกข้อมูล จุดรับของ และช่วงวันที่ที่ของพร้อมให้รับ</p>
-        {error && <div className="formError">{error}</div>}
-        <DonationForm onSubmit={submit} submitting={submitting} submitLabel="ลงของบริจาค" />
-      </section>
+    <main className="page createPointPage">
+      <div className="pageTitle">
+        <div>
+          <span className="eyebrow">สร้างจุดใหม่</span>
+          <h1>เพิ่มของบริจาค</h1>
+          <p>เลือกตำแหน่ง เพิ่มรูป และรายละเอียดที่จำเป็นก่อนแสดงบนแผนที่</p>
+        </div>
+      </div>
+
+      {error && <div className="errorBox">{error}</div>}
+      <DonationForm onSubmit={submit} submitting={submitting} submitLabel="สร้างจุดบริจาค" cancelHref="/" />
     </main>
   );
 }

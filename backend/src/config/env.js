@@ -7,6 +7,7 @@ export const env = {
   jwtSecret: process.env.JWT_SECRET || '',
   nodeEnv: process.env.NODE_ENV || 'development',
   routingBaseUrl: process.env.ROUTING_BASE_URL || 'https://router.project-osrm.org',
+  disableAutoSelectFamily: process.env.DISABLE_AUTO_SELECT_FAMILY === 'true',
 };
 
 if (!env.databaseUrl) {

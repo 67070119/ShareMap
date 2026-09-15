@@ -9,6 +9,9 @@ const mapDonationInclude = {
   images: { orderBy: { createdAt: 'asc' }, take: 1 },
 };
 
+const ROUTING_TIMEOUT_MS = 6000;
+const ROUTING_MAX_ATTEMPTS = 2;
+
 export async function listNearbyDonations({ latitude, longitude, radiusKm: radius, category }) {
   const now = new Date();
 
@@ -39,22 +42,40 @@ export async function listNearbyDonations({ latitude, longitude, radiusKm: radiu
     .filter((donation) => donation.distanceKm <= radius)
     .sort((a, b) => a.distanceKm - b.distanceKm);
 }
+async function fetchRoutingResponse(url, fetchImpl) {
+  let lastError = null;
+
+  for (let attempt = 1; attempt <= ROUTING_MAX_ATTEMPTS; attempt += 1) {
+    try {
+      const response = await fetchImpl(url, {
+        headers: { accept: 'application/json' },
+        signal: AbortSignal.timeout(ROUTING_TIMEOUT_MS),
+      });
+
+      if (response.ok) return response;
+      if (response.status >= 500 && attempt < ROUTING_MAX_ATTEMPTS) continue;
+
+      throw new AppError(502, 'ROUTING_UNAVAILABLE', 'บริการคำนวณเส้นทางไม่พร้อมใช้งาน');
+    } catch (error) {
+      if (error instanceof AppError) throw error;
+      lastError = error;
+      if (attempt >= ROUTING_MAX_ATTEMPTS) break;
+    }
+  }
+
+  const timedOut = lastError?.name === 'TimeoutError' || lastError?.name === 'AbortError';
+  throw new AppError(
+    timedOut ? 504 : 502,
+    timedOut ? 'ROUTING_TIMEOUT' : 'ROUTING_UNAVAILABLE',
+    timedOut ? 'บริการคำนวณเส้นทางใช้เวลาตอบสนองนานเกินไป' : 'ไม่สามารถเชื่อมต่อบริการคำนวณเส้นทางได้',
+  );
+}
 
 export async function getDrivingRoute({ fromLat, fromLng, toLat, toLng }, fetchImpl = fetch) {
   const base = env.routingBaseUrl.replace(/\/$/, '');
   const coordinates = `${fromLng},${fromLat};${toLng},${toLat}`;
   const url = `${base}/route/v1/driving/${coordinates}?overview=full&geometries=geojson&steps=true`;
-
-  let response;
-  try {
-    response = await fetchImpl(url, { headers: { accept: 'application/json' } });
-  } catch {
-    throw new AppError(502, 'ROUTING_UNAVAILABLE', 'ไม่สามารถเชื่อมต่อบริการคำนวณเส้นทางได้');
-  }
-
-  if (!response.ok) {
-    throw new AppError(502, 'ROUTING_UNAVAILABLE', 'บริการคำนวณเส้นทางไม่พร้อมใช้งาน');
-  }
+  const response = await fetchRoutingResponse(url, fetchImpl);
 
   const data = await response.json();
   const route = data.routes?.[0];
@@ -76,7 +97,6 @@ export async function getDrivingRoute({ fromLat, fromLng, toLat, toLng }, fetchI
     })),
   };
 }
-
 export async function getDonationDrivingRoute({ donationId, fromLat, fromLng }, fetchImpl = fetch) {
   const now = new Date();
   const donation = await prisma.donation.findUnique({

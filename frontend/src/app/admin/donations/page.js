@@ -9,11 +9,13 @@ export default function AdminDonationsPage() {
   const [donations, setDonations] = useState([]);
   const [error, setError] = useState('');
   const [busyId, setBusyId] = useState(null);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     api('/api/admin/donations')
       .then(setDonations)
-      .catch((requestError) => setError(requestError.message || 'โหลด Donations ไม่สำเร็จ'));
+      .catch((requestError) => setError(requestError.message || 'โหลด Donations ไม่สำเร็จ'))
+      .finally(() => setLoaded(true));
   }, []);
 
   async function toggleVisibility(donation) {
@@ -47,78 +49,50 @@ export default function AdminDonationsPage() {
   }
 
   return (
-    <main className="adminPage">
+    <div className="adminPortShell">
       <AdminNav />
-      <section className="adminContent">
-        <div className="adminHeading">
+      <main className="page adminPortPage">
+        <header className="pageTitle">
           <div>
-            <span>ADMIN</span>
-            <h1>Donations</h1>
+            <span className="eyebrow">ADMIN</span>
+            <h1>ของบริจาค</h1>
+            <p>ตรวจสอบโพสต์ทั้งหมด รวมถึงโพสต์ที่ถูกซ่อน และจัดการ Visibility เมื่อจำเป็น</p>
           </div>
-          <p>ดู ซ่อน หรือถอนโพสต์ที่มีปัญหา</p>
-        </div>
+          <span className="adminPortCount"><strong>{donations.length}</strong><small>โพสต์</small></span>
+        </header>
 
-        {error && <div className="adminError">{error}</div>}
+        {error && <div className="errorBox">{error}</div>}
+        {!loaded && !error && <div className="centerState adminPortLoading">กำลังโหลดโพสต์บริจาค...</div>}
 
-        <div className="adminTableWrap">
-          <table className="adminTable">
-            <thead>
-              <tr>
-                <th>โพสต์</th>
-                <th>เจ้าของ</th>
-                <th>สถานะ</th>
-                <th>Reports</th>
-                <th>Visibility</th>
-                <th>จัดการ</th>
-              </tr>
-            </thead>
-            <tbody>
+        {loaded && !error && (
+          <section className="card adminPortListCard">
+            <div className="pointSectionHeading"><div><span>รายการทั้งหมด</span><h3>Donations</h3></div></div>
+            <div className="adminPortList">
               {donations.map((donation) => (
-                <tr key={donation.id}>
-                  <td>
-                    <Link href={`/admin/donations/${donation.id}`} className="adminRowLink">{donation.title}</Link>
-                    <small>{donation.category}</small>
-                  </td>
-                  <td>
-                    <strong>{donation.owner?.name || '-'}</strong>
-                    <small>{donation.owner?.email || ''}</small>
-                  </td>
-                  <td>{donation.status}</td>
-                  <td>{donation._count?.reports ?? 0}</td>
-                  <td>
-                    <span className={`statusPill ${donation.isHidden ? 'isSuspended' : 'isActive'}`}>
-                      {donation.isHidden ? 'HIDDEN' : 'VISIBLE'}
-                    </span>
-                  </td>
-                  <td>
-                    <div className="adminActionGroup">
-                      <button
-                        type="button"
-                        className="adminSecondaryButton"
-                        onClick={() => toggleVisibility(donation)}
-                        disabled={busyId === donation.id}
-                      >
-                        {donation.isHidden ? 'แสดง' : 'ซ่อน'}
-                      </button>
-                      <button
-                        type="button"
-                        className="adminDangerButton"
-                        onClick={() => removeDonation(donation)}
-                        disabled={busyId === donation.id}
-                      >
-                        ลบ
-                      </button>
+                <article className="listRow adminPortListRow" key={donation.id}>
+                  <div className="listIcon adminPortDonationIcon" aria-hidden="true">🎁</div>
+                  <div className="adminPortListCopy">
+                    <Link href={`/admin/donations/${donation.id}`} className="adminPortTitleLink">{donation.title}</Link>
+                    <small className="muted">{donation.category} · {donation.owner?.name || '-'}</small>
+                    <div className="adminPortChips">
+                      <span className="chip">{donation.status}</span>
+                      <span className={`chip ${donation.isHidden ? 'adminChipDanger' : 'adminChipActive'}`}>{donation.isHidden ? 'HIDDEN' : 'VISIBLE'}</span>
                     </div>
-                  </td>
-                </tr>
+                    <small className="muted">Reports {donation._count?.reports ?? 0}</small>
+                  </div>
+                  <div className="sectionActions adminPortRowActions">
+                    <button type="button" className="button" onClick={() => toggleVisibility(donation)} disabled={busyId === donation.id}>
+                      {busyId === donation.id ? '...' : donation.isHidden ? 'แสดง' : 'ซ่อน'}
+                    </button>
+                    <button type="button" className="button danger" onClick={() => removeDonation(donation)} disabled={busyId === donation.id}>ลบ</button>
+                  </div>
+                </article>
               ))}
-              {donations.length === 0 && (
-                <tr><td colSpan="6">ไม่พบโพสต์บริจาค</td></tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </section>
-    </main>
+              {donations.length === 0 && <div className="empty">ไม่พบโพสต์บริจาค</div>}
+            </div>
+          </section>
+        )}
+      </main>
+    </div>
   );
 }
