@@ -7,6 +7,7 @@ import './auth-form-ux.css';
 import './detail-navigation-ux.css';
 import './admin-ux.css';
 import SiteHeader from '../components/common/SiteHeader';
+import { AuthProvider } from '../lib/useAuth';
 
 export const metadata = {
   title: 'OGTB Donation Map',
@@ -24,8 +25,10 @@ export default function RootLayout({ children }) {
   return (
     <html lang="th">
       <body>
-        <SiteHeader />
-        {children}
+        <AuthProvider>
+          <SiteHeader />
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );

@@ -425,7 +425,7 @@ export default function NavigatePage() {
           routeRequestedRef.current = false;
         }
       },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 5000 },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
     );
   }, [calculateRoute, rerouteFromCurrent, stopTracking]);
   useEffect(() => () => {

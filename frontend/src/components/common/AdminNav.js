@@ -29,7 +29,7 @@ export default function AdminNav() {
   async function handleLogout() {
     setMenuOpen(false);
     await logout();
-    router.replace('/');
+    window.location.replace('/');
   }
 
   return (

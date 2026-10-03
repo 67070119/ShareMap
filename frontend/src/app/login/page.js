@@ -2,8 +2,9 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { api } from '../../lib/api';
+import { useAuth } from '../../lib/useAuth';
 
 function nextPathFromLocation() {
   const next = new URLSearchParams(window.location.search).get('next');
@@ -12,19 +13,32 @@ function nextPathFromLocation() {
 
 export default function LoginPage() {
   const router = useRouter();
+  const { user, loading: authLoading, setSessionUser } = useAuth();
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const submittedHere = useRef(false);
+
+  useEffect(() => {
+    if (!authLoading && user && !submittedHere.current) router.replace('/');
+  }, [authLoading, user, router]);
 
   async function submit(event) {
     event.preventDefault();
+    submittedHere.current = true;
     setLoading(true);
     setError('');
+
     try {
-      await api('/api/auth/login', { method: 'POST', body: JSON.stringify(form) });
+      const result = await api('/api/auth/login', {
+        method: 'POST',
+        body: JSON.stringify(form),
+      });
+      setSessionUser(result.user);
       router.replace(nextPathFromLocation());
       router.refresh();
     } catch (requestError) {
+      submittedHere.current = false;
       setError(requestError.message || 'เข้าสู่ระบบไม่สำเร็จ');
     } finally {
       setLoading(false);

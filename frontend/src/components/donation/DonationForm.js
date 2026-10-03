@@ -36,6 +36,8 @@ export default function DonationForm({
     longitude: Number.isFinite(Number(initial.longitude)) ? Number(initial.longitude) : DEFAULT_CENTER.longitude,
   }));
   const [mapOpen, setMapOpen] = useState(false);
+  const [draftAccuracy, setDraftAccuracy] = useState(null);
+  const [locationAccuracy, setLocationAccuracy] = useState(null);
   const [locating, setLocating] = useState(false);
   const [locationError, setLocationError] = useState('');
   const [files, setFiles] = useState([]);
@@ -63,25 +65,35 @@ export default function DonationForm({
     setDraftPosition(hasLocation
       ? { latitude: Number(form.latitude), longitude: Number(form.longitude) }
       : DEFAULT_CENTER);
+    setDraftAccuracy(locationAccuracy);
     setMapOpen(true);
+  }
+
+  function updateDraftPosition(nextPosition) {
+    setDraftPosition(nextPosition);
+    setDraftAccuracy(null);
+    setLocationError('');
   }
 
   function confirmPosition() {
     if (!Number.isFinite(Number(draftPosition.latitude)) || !Number.isFinite(Number(draftPosition.longitude))) return;
     setForm((current) => ({ ...current, ...draftPosition }));
+    setLocationAccuracy(draftAccuracy);
     setLocationError('');
     setMapOpen(false);
   }
 
   function useCurrentLocation() {
     setLocationError('');
-    setMapOpen(true);
+    setDraftAccuracy(null);
 
     if (!window.isSecureContext) {
+      setMapOpen(false);
       setLocationError('การใช้ตำแหน่งปัจจุบันต้องเปิดผ่าน HTTPS หรือ localhost');
       return;
     }
     if (!navigator.geolocation) {
+      setMapOpen(false);
       setLocationError('Browser นี้ไม่รองรับการระบุตำแหน่ง');
       return;
     }
@@ -91,14 +103,17 @@ export default function DonationForm({
       ({ coords }) => {
         const current = { latitude: coords.latitude, longitude: coords.longitude };
         setDraftPosition(current);
-        setForm((value) => ({ ...value, ...current }));
+        setDraftAccuracy(Number.isFinite(Number(coords.accuracy)) ? Math.max(0, Math.round(coords.accuracy)) : null);
         setLocating(false);
+        setMapOpen(true);
       },
       () => {
         setLocating(false);
+        setDraftAccuracy(null);
+        setMapOpen(false);
         setLocationError('ไม่สามารถอ่านตำแหน่งปัจจุบันได้ กรุณาอนุญาต Location แล้วลองอีกครั้ง');
       },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 5000 },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
     );
   }
   function selectFiles(fileList) {
@@ -184,6 +199,11 @@ export default function DonationForm({
               {locating ? 'กำลังหาตำแหน่ง...' : 'ใช้ตำแหน่งปัจจุบัน'}
             </button>
           </div>
+          {hasLocation && locationAccuracy != null && locationAccuracy > 60 && (
+            <div className="locationAccuracyHint" role="status">
+              GPS ±{locationAccuracy} ม. · ตำแหน่งที่ยืนยันอาจคลาดเคลื่อน สามารถเลือกจุดบนแผนที่เองได้
+            </div>
+          )}
           {locationError && <div className="errorBox locationErrorBox">{locationError}</div>}
         </section>
 
@@ -192,7 +212,6 @@ export default function DonationForm({
             <div><span className="createStep">2</span><h3>รูปของบริจาค</h3></div>
             <span className="locationState">{existingImages.length + files.length} / 5 รูป</span>
           </div>
-
           {(existingImages.length > 0 || previewUrls.length > 0) && (
             <div className="donationImagePreviewGrid">
               {existingImages.map((image) => (
@@ -291,7 +310,12 @@ export default function DonationForm({
             <button type="button" className="locationPickerGps" onClick={useCurrentLocation} disabled={locating}>{locating ? 'กำลังหา...' : 'ตำแหน่งฉัน'}</button>
           </div>
           <div className="locationPickerMap">
-            <MapPicker value={draftPosition} onChange={setDraftPosition} />
+            {draftAccuracy != null && draftAccuracy > 60 && (
+              <div className="locationAccuracyNotice" role="status">
+                GPS ±{draftAccuracy} ม. · ตำแหน่งอาจคลาดเคลื่อน ลองกดตำแหน่งฉันอีกครั้งหรือแตะเลือกจุดเอง
+              </div>
+            )}
+            <MapPicker value={draftPosition} onChange={updateDraftPosition} />
           </div>
           <div className="locationPickerFooter">
             <button type="button" className="button primary" onClick={confirmPosition}>ยืนยันตำแหน่งนี้</button>

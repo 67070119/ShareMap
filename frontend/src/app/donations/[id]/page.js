@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { api, assetUrl } from '../../../lib/api';
 import { canNavigateToDonation } from '../../../lib/donationAvailability';
@@ -17,11 +17,16 @@ const STATUS_LABELS = {
 export default function DonationDetailPage() {
   const { id } = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const requestedReturnTo = searchParams.get('returnTo');
+  const mapBackHref = requestedReturnTo?.startsWith('/') && !requestedReturnTo.startsWith('//')
+    ? requestedReturnTo
+    : '/';
   const { user } = useAuth();
   const [donation, setDonation] = useState(null);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
-  const [reported, setReported] = useState(false);
+  const reported = searchParams.get('reported') === '1';
   const [selectedImageId, setSelectedImageId] = useState(null);
   const [photoOpen, setPhotoOpen] = useState(false);
 
@@ -39,13 +44,18 @@ export default function DonationDetailPage() {
       });
     return () => { active = false; };
   }, [id]);
-
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setReported(new URLSearchParams(window.location.search).get('reported') === '1');
-    }, 0);
-    return () => clearTimeout(timer);
-  }, []);
+    if (!reported) return;
+
+    const cleaned = new URLSearchParams(searchParams.toString());
+    cleaned.delete('reported');
+    const query = cleaned.toString();
+    window.history.replaceState(
+      window.history.state,
+      '',
+      query ? `/donations/${id}?${query}` : `/donations/${id}`,
+    );
+  }, [id, reported, searchParams]);
 
   useEffect(() => {
     if (!photoOpen) return undefined;
@@ -90,7 +100,7 @@ export default function DonationDetailPage() {
   }
 
   if (error && !donation) {
-    return <main className="page narrow"><div className="errorBox">{error}</div><Link href="/" className="button">← กลับแผนที่</Link></main>;
+    return <main className="page narrow"><div className="errorBox">{error}</div><Link href={mapBackHref} className="button">← กลับแผนที่</Link></main>;
   }
 
   if (!donation) return <main className="centerState">กำลังโหลดรายละเอียด...</main>;
@@ -109,7 +119,7 @@ export default function DonationDetailPage() {
           <h1>{donation.title}</h1>
           <p>บริจาคโดย {donation.owner?.name || 'ผู้ใช้ OGTB'} · เปิดถึง {formatBangkokDate(donation.endDate)}</p>
         </div>
-        <Link href="/" className="button pointBackButton">← กลับแผนที่</Link>
+        <Link href={mapBackHref} className="button pointBackButton">← กลับแผนที่</Link>
       </header>
 
       {error && <div className="errorBox">{error}</div>}

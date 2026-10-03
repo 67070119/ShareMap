@@ -23,7 +23,7 @@
 }
 .profileMiniNav::-webkit-scrollbar { display: none; }
 .profileMiniNavItem {
-  min-height: 38px;
+  min-height: 42px;
   display: inline-flex;
   align-items: center;
   justify-content: center;

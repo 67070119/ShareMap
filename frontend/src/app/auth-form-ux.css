@@ -334,6 +334,35 @@
 .locationSelectButton { min-height: 52px; justify-content: flex-start; padding-inline: 16px; }
 .locationSelectButton > span { color: var(--ui-primary); font-size: 20px; line-height: 1; }
 .locationErrorBox { margin-bottom: 0; }
+.locationAccuracyHint {
+  margin-top: 10px;
+  padding: 9px 11px;
+  border: 1px solid #fde68a;
+  border-radius: 12px;
+  background: #fffbeb;
+  color: #92400e;
+  font-size: 11px;
+  font-weight: 650;
+}
+.locationAccuracyNotice {
+  position: absolute;
+  z-index: 700;
+  top: 14px;
+  left: 50%;
+  width: min(520px, calc(100% - 28px));
+  transform: translateX(-50%);
+  padding: 9px 12px;
+  border: 1px solid #fde68a;
+  border-radius: 12px;
+  background: rgba(255,251,235,.96);
+  color: #92400e;
+  box-shadow: var(--ui-shadow-sm);
+  backdrop-filter: blur(12px);
+  font-size: 11px;
+  font-weight: 680;
+  text-align: center;
+  pointer-events: none;
+}
 .uploadBox {
   min-height: 172px;
   display: grid;
@@ -377,7 +406,7 @@
   position: absolute;
   top: 8px;
   right: 8px;
-  min-height: 34px;
+  min-height: 42px;
   padding: 6px 9px;
   border: 1px solid rgba(255,255,255,.2);
   border-radius: 10px;

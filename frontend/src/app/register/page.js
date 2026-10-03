@@ -2,14 +2,21 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { api } from '../../lib/api';
+import { useAuth } from '../../lib/useAuth';
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { user, loading: authLoading, setSessionUser } = useAuth();
   const [form, setForm] = useState({ name: '', email: '', password: '', confirm: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const submittedHere = useRef(false);
+
+  useEffect(() => {
+    if (!authLoading && user && !submittedHere.current) router.replace('/');
+  }, [authLoading, user, router]);
 
   async function submit(event) {
     event.preventDefault();
@@ -18,16 +25,18 @@ export default function RegisterPage() {
       setError('รหัสผ่านยืนยันไม่ตรงกัน');
       return;
     }
-
+    submittedHere.current = true;
     setLoading(true);
     try {
-      await api('/api/auth/register', {
+      const result = await api('/api/auth/register', {
         method: 'POST',
         body: JSON.stringify({ name: form.name, email: form.email, password: form.password }),
       });
+      setSessionUser(result.user);
       router.replace('/');
       router.refresh();
     } catch (requestError) {
+      submittedHere.current = false;
       setError(requestError.message || 'สมัครสมาชิกไม่สำเร็จ');
     } finally {
       setLoading(false);

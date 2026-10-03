@@ -1,13 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { useAuth } from '../../lib/useAuth';
 
 export default function SiteHeader() {
   const pathname = usePathname();
-  const router = useRouter();
   const { user, loading, logout } = useAuth();
   const [menuPath, setMenuPath] = useState(null);
   const menuOpen = menuPath === pathname;
@@ -23,8 +22,7 @@ export default function SiteHeader() {
   async function handleLogout() {
     closeMenu();
     await logout();
-    router.push('/');
-    router.refresh();
+    window.location.replace('/');
   }
 
   return (

@@ -60,7 +60,13 @@ function RadiusViewport({ center, radiusKm }) {
   return null;
 }
 
-export default function DonationMap({ donations, userPosition, radiusKm }) {
+export default function DonationMap({
+  donations,
+  userPosition,
+  userAccuracy = null,
+  radiusKm,
+  returnTo = '/',
+}) {
   const [selectedId, setSelectedId] = useState(null);
 
   return (
@@ -79,6 +85,16 @@ export default function DonationMap({ donations, userPosition, radiusKm }) {
       <LocateUser position={userPosition} />
       <RadiusViewport center={userPosition} radiusKm={radiusKm} />
 
+      {userPosition && Number.isFinite(userAccuracy) && userAccuracy > 0 && (
+        <Circle
+          center={userPosition}
+          radius={userAccuracy}
+          interactive={false}
+          className="mapAccuracyCircle"
+          pathOptions={{ color: '#2563eb', weight: 1, opacity: 0.55, fillColor: '#2563eb', fillOpacity: 0.09, dashArray: '4 5' }}
+        />
+      )}
+
       {userPosition && radiusKm && (
         <Circle
           center={userPosition}
@@ -91,6 +107,10 @@ export default function DonationMap({ donations, userPosition, radiusKm }) {
 
       {donations.map((donation) => {
         const selected = selectedId === donation.id;
+        const detailHref = returnTo === '/'
+          ? `/donations/${donation.id}`
+          : `/donations/${donation.id}?returnTo=${encodeURIComponent(returnTo)}`;
+
         return (
           <Marker
             key={donation.id}
@@ -104,7 +124,7 @@ export default function DonationMap({ donations, userPosition, radiusKm }) {
                 <div className="popupTypeRow"><span className="popupAnimalIcon popupAnimalIcon--donation" aria-hidden="true">🎁</span><span>{donation.category}</span></div>
                 <strong className="popupHeadline">{donation.title}</strong>
                 <div className="popupData"><span>จำนวน / ระยะทาง</span><strong>{donation.quantity} ชิ้น · {Number(donation.distanceKm).toFixed(1)} กม.</strong></div>
-                <Link className="popupAction" href={`/donations/${donation.id}`}>ดูรายละเอียด <span aria-hidden="true">→</span></Link>
+                <Link className="popupAction" href={detailHref}>ดูรายละเอียด <span aria-hidden="true">→</span></Link>
               </div>
             </Popup>
           </Marker>
