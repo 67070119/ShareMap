@@ -60,7 +60,7 @@ cp .env.example backend/.env
 - `NEXT_PUBLIC_API_URL` — optional; ปล่อยว่างเพื่อให้ browser เรียก `/api` และ `/uploads` ผ่าน Frontend แบบ same-origin ซึ่งเป็นค่าแนะนำ
 - `JWT_SECRET`, `NODE_ENV`, `ROUTING_BASE_URL`, `SEED_ADMIN_PASSWORD`, `SEED_USER_PASSWORD`
 
-Docker Compose จะให้ Next.js proxy `/api/*` และ `/uploads/*` ไป Backend service ภายใน (`http://backend:4000`) ดังนั้นการทดสอบผ่าน HTTPS tunnel ใช้ URL Frontend เพียงตัวเดียวและ session cookie ไม่ต้องข้าม origin ถ้าจำเป็นต้องเรียก Backend URL โดยตรงค่อยกำหนด `NEXT_PUBLIC_API_URL` เอง
+Docker Compose จะให้ Next.js proxy `/api/*` และ `/uploads/*` ไป Backend service ภายในที่ port เดียวกับ `BACKEND_PORT` (ค่าเริ่มต้น `http://backend:4000`) ดังนั้นการทดสอบผ่าน HTTPS tunnel ใช้ URL Frontend เพียงตัวเดียวและ session cookie ไม่ต้องข้าม origin ถ้าจำเป็นต้องเรียก Backend URL โดยตรงค่อยกำหนด `NEXT_PUBLIC_API_URL` เอง
 
 ถ้าเปลี่ยน Frontend port ให้ปรับ `FRONTEND_URL` ให้สัมพันธ์กัน เช่น `FRONTEND_PORT=3100` → `FRONTEND_URL=http://localhost:3100`
 `DATABASE_URL` ใน `.env.example` ใช้สำหรับการรัน Backend โดยตรงบน host ส่วน Docker Compose ใช้ PostgreSQL service ชื่อ `db` ภายใน network ของ Compose จึงไม่ใช้ค่า `localhost` จาก root `.env`

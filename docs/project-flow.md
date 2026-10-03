@@ -7,12 +7,16 @@
 ```text
 Guest
   ↓
-Register / Login
-  ↓
-Backend สร้าง JWT session ใน httpOnly cookie
-  ↓
-USER / ADMIN เข้าใช้งานหน้า Map
+Map / Nearby Search / Donation Detail (Public)
+  ├── ดูจุดบริจาคและรายละเอียดได้โดยไม่ต้อง Login
+  └── เมื่อต้องทำ protected action → Register / Login
+                                      ↓
+                         Backend สร้าง JWT session ใน httpOnly cookie
+                                      ↓
+                               USER / ADMIN
 ```
+
+การสร้าง Donation, แก้ไข/ลบโพสต์ของตัวเอง, อัปโหลดรูป และส่ง Report ต้อง Login ก่อน ส่วนหน้า Map, Nearby Search, Donation Detail และ Navigation เป็น public flow
 
 `ADMIN` ยังใช้ระบบปกติเหมือน `USER` และมีปุ่ม Dashboard เพิ่ม
 
@@ -156,17 +160,15 @@ ADMIN
 ## End-to-End Flow
 
 ```text
-Register / Login
-      ↓
-Map
-      ↓
-ดู Donation / ลง Donation
-      ↓
+เข้าเว็บไซต์
+    ↓
+Map / Nearby Search (Public)
+    ↓
 Donation Detail
-      ├── Navigation
-      └── Report
-              ↓
-          Admin Review
+    ├── Navigation (Public)
+    └── Protected actions → Register / Login
+                              ├── USER / ADMIN: สร้าง Donation / Report / จัดการโพสต์ของตัวเอง
+                              └── ADMIN: Dashboard / Admin Review
 ```
 
 ระบบไม่มี workflow การจองของ ไม่มีการ claim สิ่งของ และไม่มี chat ตามขอบเขตของ source of truth

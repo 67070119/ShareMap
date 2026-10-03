@@ -141,6 +141,7 @@ Reason:
 - payload เกิน 1 MB → `413 PAYLOAD_TOO_LARGE`
 - rate limit เกิน → `429 TOO_MANY_REQUESTS`
 - Routing Provider มีปัญหา → `502 ROUTING_UNAVAILABLE`
+- Routing Provider timeout หลัง retry → `504 ROUTING_TIMEOUT`
 - Internal error → `500` โดยไม่ส่ง stack trace กลับ client
 
 ระบบไม่มี Claim / Reservation endpoint ตาม source of truth

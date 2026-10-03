@@ -52,6 +52,7 @@ Controller รับ/ส่ง HTTP response ส่วน business logic หล�
 - `/admin` — Dashboard
 - `/admin/users` — User management
 - `/admin/donations` — Donation moderation
+- `/admin/donations/[id]` — Admin Donation Detail + related reports/actions
 - `/admin/reports` และ `/admin/reports/[id]` — Report review
 
 ## Map / Routing
@@ -71,7 +72,7 @@ Navigation เรียก Routing Provider จาก Backend ผ่าน `ROUT
 ## Docker / Environment
 
 Docker Compose รับ host/application config จาก root `.env`: `FRONTEND_PORT`, `BACKEND_PORT`, `FRONTEND_URL`, `NEXT_PUBLIC_API_URL`, `JWT_SECRET`, `NODE_ENV`, `ROUTING_BASE_URL` และ seed passwords โดยค่า port เริ่มต้นยังเป็น Frontend `3000` / Backend `4000`
-ค่าแนะนำคือปล่อย `NEXT_PUBLIC_API_URL` ว่าง เพื่อให้ browser เรียก `/api/*` และ `/uploads/*` แบบ same-origin ผ่าน Next.js rewrite จากนั้น Frontend container จะ proxy ต่อไปยัง `http://backend:4000` ภายใน Compose network วิธีนี้ทำให้ session cookie ทำงานกับ HTTPS tunnel โดยไม่ต้องพึ่ง cross-origin cookie
+ค่าแนะนำคือปล่อย `NEXT_PUBLIC_API_URL` ว่าง เพื่อให้ browser เรียก `/api/*` และ `/uploads/*` แบบ same-origin ผ่าน Next.js rewrite จากนั้น Frontend container จะ proxy ไปยัง `http://backend:${BACKEND_PORT:-4000}` ภายใน Compose network จึงใช้ port เดียวกับ Backend service เสมอ วิธีนี้ทำให้ session cookie ทำงานกับ HTTPS tunnel โดยไม่ต้องพึ่ง cross-origin cookie
 ถ้าเปลี่ยน Frontend host port ให้เปลี่ยน `FRONTEND_URL` ให้เป็น origin เดียวกัน ส่วน `DATABASE_URL` สำหรับ Docker ถูกกำหนดเป็น PostgreSQL service `db` ภายใน Compose network; ค่า `DATABASE_URL` แบบ `localhost` ใน `.env.example` ใช้ตอนรัน Backend บน host โดยตรง
 Compose แยก `backend/node_modules`, `frontend/node_modules` และ `frontend/.next` ไปไว้ใน named volumes เพื่อป้องกัน native dependency จาก Alpine container ปนกับ dependency/build cache ของ host
 ## Authentication / Authorization
@@ -115,12 +116,9 @@ Coverage gate:
 - Functions ≥ 80%
 - Branches ≥ 60%
 
-ผลล่าสุด:
+Repository ปัจจุบันมี Backend test cases 77 cases
 
-- Tests: 75/75 ผ่าน
-- Lines: 85.20%
-- Functions: 85.71%
-- Branches: 67.30%
+เอกสารนี้ไม่ตรึงค่า pass/coverage snapshot เพื่อไม่ให้ตัวเลขเก่าเมื่อเพิ่ม test ใหม่ โดยให้ `npm test` และ `npm run test:coverage` เป็น source of truth ของผลทดสอบและ coverage ล่าสุด
 
 System-flow test ครอบคลุม `Register → Donation → Nearby Search → Report → Admin Review → Hide Donation → Suspend User`
 
