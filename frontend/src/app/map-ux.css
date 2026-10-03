@@ -238,7 +238,7 @@
   .radiusFilter { bottom: max(16px, calc(8px + env(safe-area-inset-bottom))); width: calc(100% - 24px); padding: 10px 12px 9px; border-radius: 17px; }
   .radiusFilterHeader { margin-bottom: 6px; }
   .mapCategoryFilter { bottom: max(142px, calc(134px + env(safe-area-inset-bottom))); width: min(300px, calc(100% - 24px)); }
-  .mapShell .leaflet-control-zoom { margin-right: 12px; margin-bottom: 100px; }
+  .mapShell .leaflet-control-zoom { margin-right: 12px; margin-bottom: max(196px, calc(188px + env(safe-area-inset-bottom))); }
 }
 
 @media (max-width: 430px) {
@@ -249,7 +249,7 @@
   .mapCategoryFilter { bottom: max(136px, calc(128px + env(safe-area-inset-bottom))); width: calc(100% - 20px); }
   .mapStatus { top: max(128px, calc(env(safe-area-inset-top) + 116px)); bottom: auto; left: 12px; right: 12px; max-width: none; transform: none; }
   .mapSummary span:last-child { display: none; }
-  .mapShell .leaflet-control-zoom { margin-bottom: 94px; }
+  .mapShell .leaflet-control-zoom { margin-bottom: max(190px, calc(182px + env(safe-area-inset-bottom))); }
 }
 
 @media (hover: none) and (pointer: coarse) {

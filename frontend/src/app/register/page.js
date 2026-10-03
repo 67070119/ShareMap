@@ -25,7 +25,8 @@ export default function RegisterPage() {
         method: 'POST',
         body: JSON.stringify({ name: form.name, email: form.email, password: form.password }),
       });
-      router.push('/login');
+      router.replace('/');
+      router.refresh();
     } catch (requestError) {
       setError(requestError.message || 'สมัครสมาชิกไม่สำเร็จ');
     } finally {

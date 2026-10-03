@@ -33,6 +33,7 @@ services:
       JWT_SECRET: ${JWT_SECRET:-local-development-only-secret}
       SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-}
       SEED_USER_PASSWORD: ${SEED_USER_PASSWORD:-}
+      E2E_DISABLE_RATE_LIMIT: ${E2E_DISABLE_RATE_LIMIT:-false}
       NODE_ENV: ${NODE_ENV:-development}
     depends_on:
       db:

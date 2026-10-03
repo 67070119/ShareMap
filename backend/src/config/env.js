@@ -8,6 +8,9 @@ export const env = {
   nodeEnv: process.env.NODE_ENV || 'development',
   routingBaseUrl: process.env.ROUTING_BASE_URL || 'https://router.project-osrm.org',
   disableAutoSelectFamily: process.env.DISABLE_AUTO_SELECT_FAMILY === 'true',
+  disableRateLimitForE2e:
+    (process.env.NODE_ENV || 'development') !== 'production'
+    && process.env.E2E_DISABLE_RATE_LIMIT === 'true',
 };
 
 if (!env.databaseUrl) {
