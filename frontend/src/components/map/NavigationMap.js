@@ -94,13 +94,13 @@ export default function NavigationMap({
     if (positions.length > 1) {
       L.polyline(positions, {
         pane: 'route-preview',
-        color: '#1e3a8a',
+        color: '#0b1a2a',
         weight: activeNavigation ? 12 : 11,
         opacity: 0.72,
       }).addTo(group);
       L.polyline(positions, {
         pane: 'route-preview',
-        color: '#2563eb',
+        color: '#38bdf8',
         weight: activeNavigation ? 6 : 5,
         opacity: 1,
       }).addTo(group);
@@ -108,8 +108,8 @@ export default function NavigationMap({
 
     L.circleMarker(to, {
       radius: 12,
-      color: '#ffffff',
-      fillColor: '#2563eb',
+      color: '#f1f5f9',
+      fillColor: '#38bdf8',
       fillOpacity: 0.96,
       weight: 3,
     })
@@ -120,8 +120,8 @@ export default function NavigationMap({
       if (accuracy) {
         L.circle(from, {
           radius: accuracy,
-          color: '#2563eb',
-          fillColor: '#2563eb',
+          color: '#38bdf8',
+          fillColor: '#38bdf8',
           fillOpacity: 0.07,
           weight: 1,
         }).addTo(group);
@@ -129,7 +129,7 @@ export default function NavigationMap({
 
       L.circleMarker(from, {
         radius: activeNavigation ? 11 : 10,
-        color: '#0f172a',
+        color: '#0b1120',
         fillColor: '#ffffff',
         fillOpacity: 1,
         weight: 4,

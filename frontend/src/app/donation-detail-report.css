@@ -1,0 +1,416 @@
+/* OGTB v2 Phase 6 — Donation detail, gallery, report and moderation dialogs.
+ * Scoped visuals only. Server endpoints and the existing availability rules are unchanged.
+ */
+.donationDetailExperience.pointDetailPage,
+.donationReportExperience.reportPortPage {
+  max-width: 1260px; min-height: calc(100dvh - 74px);
+  width: 100%; margin: 0 auto;
+  padding: 30px clamp(18px, 3vw, 44px) 70px;
+  background: var(--ui-bg); color: var(--ui-ink);
+}
+.pointBreadcrumbs {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 9px;
+  margin-bottom: 23px; color: var(--ui-muted); font-size: 11px; font-weight: 730;
+}
+.pointBreadcrumbs a { color: var(--ui-muted); text-decoration: none; }
+.pointBreadcrumbs a:hover { color: var(--ui-primary); }
+.pointBreadcrumbs > svg { color: var(--ui-line-strong); }
+.pointBreadcrumbs [aria-current="page"] { color: var(--ui-primary); }
+
+.donationDetailExperience .pointDetailHeader {
+  display: flex; align-items: end; justify-content: space-between; gap: 22px;
+  padding: 20px 0 27px; margin: 0;
+}
+.donationDetailExperience .pointDetailTitle { min-width: 0; }
+.donationDetailExperience .pointDetailTitle .eyebrow,
+.donationReportExperience .reportPortHeader .eyebrow {
+  display: inline-block; font-size: 10px; color: var(--ui-primary);
+  font-weight: 820; letter-spacing: .11em;
+}
+.donationDetailExperience .pointDetailHeader h1,
+.donationReportExperience .reportPortHeader h1 {
+  margin: 12px 0 10px; color: var(--ui-ink);
+  font-size: clamp(29px, 3.6vw, 43px); letter-spacing: -.025em;
+  line-height: 1.24; font-weight: 800; overflow-wrap: anywhere;
+}
+.donationDetailExperience .pointDetailHeader p {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 7px;
+  margin: 0; color: var(--ui-muted); font-size: 12px; line-height: 1.65;
+}
+.donationDetailExperience .pointDetailHeader p svg { color: var(--ui-primary); flex-shrink: 0; }
+.donationDetailExperience .pointBackButton,
+.donationReportExperience .reportPortHeader .button {
+  display: inline-flex; align-items: center; gap: 9px; justify-content: center;
+  flex: 0 0 auto; min-height: 44px; padding: 10px 14px;
+  color: var(--ui-text); background: var(--ui-surface-soft);
+  border: 1px solid var(--ui-line); border-radius: 12px; font-size: 12px;
+}
+.donationDetailExperience .pointBackButton:hover,
+.donationReportExperience .reportPortHeader .button:hover { border-color: var(--ui-primary); color: var(--ui-ink); }
+.donationDetailExperience .pointDetailNotice {
+  display: flex; align-items: center; gap: 10px; border-radius: 13px;
+  padding: 13px 16px; margin: 0 0 17px;
+}
+.donationDetailExperience .pointDetailNotice.errorBox { color: var(--ui-danger); border-color: var(--ui-danger-line); }
+.donationDetailExperience .pointDetailNotice.successBox { color: var(--ui-success); border-color: var(--ui-success-line); }
+
+.donationDetailExperience .pointHeroCard.card {
+  display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(330px, .92fr);
+  gap: 26px; padding: clamp(15px, 2.2vw, 24px); margin: 0 0 20px;
+  background: var(--ui-surface); border: 1px solid var(--ui-line);
+  border-radius: 23px; box-shadow: var(--ui-shadow);
+}
+.donationDetailExperience .pointPhotoPanel { display: flex; flex-direction: column; min-width: 0; }
+.donationDetailExperience .pointGalleryStage { position: relative; min-height: 0; flex: 1; }
+.donationDetailExperience .pointPhotoButton {
+  position: relative; width: 100%; height: 100%; min-height: 370px;
+  padding: 0; display: block; overflow: hidden;
+  background: var(--ui-surface-soft); border: 1px solid var(--ui-line);
+  border-radius: 17px; cursor: zoom-in;
+}
+.donationDetailExperience .pointHeroImage {
+  display: block; width: 100%; height: 100%; min-height: 370px; max-height: 530px;
+  object-fit: cover; transition: transform .2s ease, filter .2s ease;
+}
+.donationDetailExperience .pointPhotoButton:hover .pointHeroImage { transform: scale(1.015); filter: brightness(.92); }
+.donationDetailExperience .pointPhotoHint {
+  position: absolute; right: 13px; bottom: 13px; display: inline-flex; align-items: center; gap: 7px;
+  padding: 9px 12px; border: 1px solid rgba(225,243,253,.2);
+  border-radius: 11px; background: rgba(9,19,35,.85); color: var(--ui-ink);
+  font-size: 11px; backdrop-filter: blur(14px);
+}
+.donationDetailExperience .pointPhotoCounter {
+  position: absolute; top: 14px; left: 14px; display: grid; place-items: center;
+  min-width: 48px; min-height: 31px; padding: 6px 10px; color: var(--ui-ink);
+  background: rgba(9,19,35,.84); border: 1px solid rgba(225,243,253,.18);
+  border-radius: 10px; font-size: 11px; font-weight: 730; pointer-events: none;
+}
+.donationDetailExperience .pointHeroFallback {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 11px;
+  min-height: 390px; height: 100%; padding: 24px; text-align: center;
+  border: 1px dashed var(--ui-line-strong); border-radius: 17px;
+  color: var(--ui-muted);
+  background: radial-gradient(ellipse at center,rgba(56,189,248,.09),transparent 75%),var(--ui-surface-soft);
+}
+.donationDetailExperience .pointHeroFallback strong { color: var(--ui-text); font-size: 14px; }
+.donationDetailExperience .pointHeroFallback small { color: var(--ui-muted); font-size: 11px; }
+.donationDetailExperience .pointGalleryFallbackIcon {
+  display: grid; place-items: center; width: 72px; height: 72px; margin-bottom: 3px;
+  border-radius: 22px; color: var(--ui-primary); background: var(--ui-primary-soft);
+}
+.donationDetailExperience .pointThumbRow {
+  display: flex; gap: 9px; padding: 11px 2px 4px;
+  overflow-x: auto; max-width: 100%; scrollbar-width: thin;
+}
+.donationDetailExperience .pointThumbButton {
+  flex: 0 0 73px; height: 65px; width: 73px; padding: 0;
+  overflow: hidden; border: 2px solid var(--ui-line);
+  border-radius: 12px; background: var(--ui-surface-soft);
+}
+.donationDetailExperience .pointThumbButton.isActive { border-color: var(--ui-primary); }
+.donationDetailExperience .pointThumbButton:hover { border-color: var(--ui-primary-hover); }
+.donationDetailExperience .pointThumbButton img { width: 100%; height: 100%; display: block; object-fit: cover; }
+.donationDetailExperience .pointHeroContent { display: flex; flex-direction: column; min-width: 0; gap: 0; padding: 10px 3px; }
+.donationDetailExperience .pointHeroTopline { display: flex; align-items: center; flex-wrap: wrap; justify-content: space-between; gap: 10px; margin-bottom: 25px; }
+.donationDetailExperience .pointSeenBadge,
+.donationDetailExperience .pointStatusBadge {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 31px;
+  padding: 6px 11px; border-radius: 999px; font-size: 11px; font-weight: 740;
+}
+.donationDetailExperience .pointSeenBadge {
+  color: var(--ui-primary); background: var(--ui-primary-soft);
+  border: 1px solid rgba(56,189,248,.28);
+}
+.donationDetailExperience .pointStatusBadge {
+  color: var(--ui-success); background: var(--ui-success-soft);
+  border: 1px solid var(--ui-success-line);
+}
+.donationDetailExperience .pointStatusBadge--expired {
+  color: var(--ui-muted); border-color: var(--ui-line); background: var(--ui-surface-soft);
+}
+.donationDetailExperience .pointStatusBadge--out_of_stock {
+  color: var(--ui-warning); border-color: var(--ui-warning-line); background: var(--ui-warning-soft);
+}
+.donationDetailExperience .pointStatusDot { width: 7px; height: 7px; flex: 0 0 7px; background: currentColor; border-radius: 50%; }
+.donationDetailExperience .pointInfoEyebrow { font-size: 10px; color: var(--ui-muted); font-weight: 770; letter-spacing: .12em; }
+.donationDetailExperience .pointHeroContent h2 { margin: 8px 0 13px; font-size: 25px; color: var(--ui-ink); line-height: 1.3; }
+.donationDetailExperience .pointQuantityNumber { font-size: 38px; letter-spacing: -.04em; color: var(--ui-primary); }
+.donationDetailExperience .pointDescription {
+  margin: 0 0 21px; color: var(--ui-text); font-size: 13px; line-height: 1.8;
+  white-space: pre-wrap; overflow-wrap: anywhere;
+}
+.donationDetailExperience .pointMetaGrid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 9px; margin-top: auto; }
+.donationDetailExperience .pointMetaItem {
+  display: grid; align-content: start; gap: 7px; padding: 13px;
+  min-width: 0; border: 1px solid var(--ui-line); border-radius: 13px;
+  background: var(--ui-surface-soft);
+}
+.donationDetailExperience .pointMetaItem:first-child { grid-column: 1/-1; }
+.donationDetailExperience .pointMetaItem svg { color: var(--ui-primary); }
+.donationDetailExperience .pointMetaItem span { margin: 0; color: var(--ui-muted); font-size: 10px; font-weight: 700; }
+.donationDetailExperience .pointMetaItem strong { display: block; color: var(--ui-ink); font-size: 12px; line-height: 1.5; }
+.donationDetailExperience .pointNavigateButton {
+  display: flex; gap: 10px; justify-content: center; align-items: center;
+  width: 100%; min-height: 50px; padding: 11px 16px; margin-top: 17px;
+  color: var(--ui-primary-contrast); background: var(--ui-primary);
+  border: 1px solid var(--ui-primary); border-radius: 12px;
+  font-size: 13px; font-weight: 780; text-decoration: none;
+}
+.donationDetailExperience .pointNavigateButton:hover { background: var(--ui-primary-hover); }
+.donationDetailExperience .pointNavigateButton svg:last-child { margin-left: auto; }
+.donationDetailExperience .pointAvailabilityHint {
+  display: flex; gap: 9px; align-items: center; padding: 13px; margin-top: 17px;
+  border: 1px solid var(--ui-warning-line); border-radius: 12px;
+  background: var(--ui-warning-soft); color: var(--ui-warning);
+  line-height: 1.5; font-size: 11px;
+}
+.donationDetailExperience .pointAvailabilityHint svg { flex: 0 0 auto; }
+.donationDetailExperience .pointActionGrid {
+  display: grid; grid-template-columns: minmax(0,1.08fr) minmax(0,.92fr);
+  gap: 20px; align-items: stretch;
+}
+.donationDetailExperience .pointActionGrid > .card {
+  min-width: 0; margin: 0; padding: 24px;
+  border: 1px solid var(--ui-line); border-radius: 20px;
+  background: var(--ui-surface); box-shadow: var(--ui-shadow-sm);
+}
+.donationDetailExperience .pointSectionHeading,
+.donationReportExperience .pointSectionHeading {
+  display: flex; justify-content: space-between; align-items: start; gap: 14px; margin-bottom: 21px;
+}
+.donationDetailExperience .pointSectionHeading > svg,
+.donationReportExperience .pointSectionHeading > svg { color: var(--ui-primary); }
+.donationDetailExperience .pointSectionHeading span,
+.donationReportExperience .pointSectionHeading span {
+  display: block; margin-bottom: 6px; color: var(--ui-primary);
+  font-size: 10px; font-weight: 780; letter-spacing: .09em;
+}
+.donationDetailExperience .pointSectionHeading h3,
+.donationReportExperience .pointSectionHeading h3 { margin: 0; color: var(--ui-ink); font-size: 18px; line-height: 1.45; }
+.donationDetailExperience .pointDetailList { display: grid; gap: 9px; }
+.donationDetailExperience .pointDetailList > div {
+  display: flex; align-items: start; justify-content: space-between; gap: 12px;
+  min-height: 47px; padding: 13px 14px;
+  border: 1px solid var(--ui-line); border-radius: 12px; background: var(--ui-surface-soft);
+}
+.donationDetailExperience .pointDetailList span { color: var(--ui-muted); font-size: 12px; }
+.donationDetailExperience .pointDetailList strong { text-align: right; color: var(--ui-ink); font-size: 12px; }
+.donationDetailExperience .pointManageCard { display: flex; flex-direction: column; }
+.donationDetailExperience .pointManageCopy { margin: 0 0 22px; font-size: 12px; color: var(--ui-muted); line-height: 1.75; }
+.donationDetailExperience .pointManageActions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: auto; }
+.donationDetailExperience .pointManageActions .button,
+.donationDetailExperience .pointReportButton {
+  display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+  min-height: 46px; padding: 10px 13px; border-radius: 12px;
+  font-size: 12px; font-weight: 750; text-decoration: none;
+  border: 1px solid var(--ui-line); background: var(--ui-surface-soft); color: var(--ui-ink);
+}
+.donationDetailExperience .pointManageActions .button.danger {
+  grid-column: 1/-1; color: var(--ui-danger);
+  border-color: var(--ui-danger-line); background: var(--ui-danger-soft);
+}
+.donationDetailExperience .pointManageActions .button:hover,
+.donationDetailExperience .pointReportButton:hover { border-color: var(--ui-primary); background: var(--ui-surface-raised); }
+.donationDetailExperience .pointManageActions .button.danger:hover { border-color: var(--ui-danger); background: #512532; }
+.donationDetailExperience .pointReportButton { width: 100%; margin-top: auto; color: var(--ui-warning); border-color: var(--ui-warning-line); background: var(--ui-warning-soft); }
+
+/* Portal lightbox */
+.pointLightbox { z-index: 4500; gap: 8px; }
+.pointLightboxTop {
+  position: absolute; top: max(20px, env(safe-area-inset-top)); left: max(22px,env(safe-area-inset-left));
+  display: flex; gap: 12px; align-items: center; max-width: calc(100% - 155px);
+  color: var(--ui-ink); font-size: 12px; pointer-events: none;
+}
+.pointLightboxTop strong { max-width: 350px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.pointLightboxTop span { color: var(--ui-muted); white-space: nowrap; }
+.pointLightboxArrow {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  display: grid; place-items: center; width: 45px; height: 45px;
+  border: 1px solid var(--ui-line-strong); border-radius: 50%;
+  background: rgba(21,30,48,.88); color: var(--ui-ink); cursor: pointer;
+}
+.pointLightboxArrow:hover { background: var(--ui-surface-raised); border-color: var(--ui-primary); }
+.pointLightboxArrow--prev { left: max(17px,env(safe-area-inset-left)); }
+.pointLightboxArrow--prev svg { transform: rotate(180deg); }
+.pointLightboxArrow--next { right: max(17px,env(safe-area-inset-right)); }
+.pointLightbox img { max-width: min(1180px, calc(100vw - 140px)); max-height: 80dvh; }
+.pointLightboxClose { z-index: 2; }
+
+/* Confirm dialog */
+.pointConfirmModal .ui-modal__title { font-size: 21px; line-height: 1.45; color: var(--ui-ink); }
+.pointConfirmBody { display: flex; align-items: center; gap: 15px; color: var(--ui-text); }
+.pointConfirmBody p { margin: 0; font-size: 13px; line-height: 1.7; }
+.pointConfirmIcon { flex: 0 0 50px; display: grid; place-items: center; width: 50px; height: 50px; border-radius: 15px; color: var(--ui-warning); background: var(--ui-warning-soft); }
+.pointConfirmIcon.isDanger { color: var(--ui-danger); background: var(--ui-danger-soft); }
+.pointConfirmModal .ui-modal__actions .button { min-width: 130px; min-height: 44px; border-radius: 11px; }
+.pointConfirmModal .pointConfirmCancel { color: var(--ui-text); border-color: var(--ui-line); background: var(--ui-surface-soft); }
+.pointConfirmModal .pointConfirmProceed.primary { color: var(--ui-primary-contrast); background: var(--ui-primary); border-color: var(--ui-primary); }
+.pointConfirmModal .pointConfirmProceed.danger { color: var(--ui-danger); background: var(--ui-danger-soft); border-color: var(--ui-danger-line); }
+
+/* Report screen */
+.donationReportExperience.reportPortPage { max-width: 1160px; }
+.donationReportExperience .reportPortHeader {
+  display: flex; justify-content: space-between; align-items: end; gap: 20px;
+  padding: 15px 0 27px; margin: 0;
+}
+.donationReportExperience .reportPortHeader p { max-width: 650px; color: var(--ui-muted); font-size: 13px; line-height: 1.65; }
+.donationReportLayout { display: grid; grid-template-columns: minmax(0,1.35fr) minmax(255px,.65fr); gap: 22px; align-items: start; }
+.donationReportExperience .reportPortCard.card {
+  min-width: 0; margin: 0; padding: clamp(20px,3vw,30px);
+  border: 1px solid var(--ui-line); border-radius: 21px;
+  background: var(--ui-surface); box-shadow: var(--ui-shadow-sm);
+}
+.donationReportExperience .reportReasonFieldset { padding: 0; margin: 0; border: 0; min-width: 0; }
+.reportVisuallyHidden { position: absolute; width: 1px; height: 1px; clip: rect(0 0 0 0); overflow: hidden; white-space: nowrap; }
+.donationReportExperience .reportReasonList { display: grid; gap: 10px; margin: 0; }
+.donationReportExperience .reportReasonOption {
+  display: flex; align-items: center; gap: 13px; min-height: 70px; padding: 13px;
+  border: 1px solid var(--ui-line); border-radius: 14px;
+  background: var(--ui-surface-soft); color: var(--ui-ink);
+  cursor: pointer; transition: background-color .15s,border-color .15s;
+}
+.donationReportExperience .reportReasonOption:hover { background: var(--ui-surface-raised); border-color: var(--ui-line-strong); }
+.donationReportExperience .reportReasonOption.isSelected {
+  background: var(--ui-primary-soft); border-color: var(--ui-primary);
+  box-shadow: inset 3px 0 0 var(--ui-primary);
+}
+.donationReportExperience .reportReasonOption input {
+  position: absolute; width: 1px; height: 1px; opacity: 0; margin: 0;
+}
+.donationReportExperience .reportReasonOption:focus-within {
+  outline: 2px solid var(--ui-primary); outline-offset: 2px;
+}
+.donationReportExperience .reportReasonIcon {
+  flex: 0 0 42px; width: 42px; height: 42px; display: grid; place-items: center;
+  border-radius: 12px; color: var(--ui-primary); background: rgba(56,189,248,.1);
+}
+.donationReportExperience .reportReasonCopy { display: grid; min-width: 0; gap: 5px; flex: 1; }
+.donationReportExperience .reportReasonCopy strong { font-size: 12px; color: var(--ui-ink); font-weight: 770; line-height: 1.35; }
+.donationReportExperience .reportReasonCopy small { font-size: 11px; color: var(--ui-muted); line-height: 1.5; }
+.donationReportExperience .reportReasonIndicator {
+  flex: 0 0 19px; width: 19px; height: 19px; border: 2px solid var(--ui-line-strong);
+  border-radius: 50%; background: var(--ui-surface);
+}
+.donationReportExperience .reportReasonOption.isSelected .reportReasonIndicator {
+  border: 5px solid var(--ui-primary); background: var(--ui-primary-contrast);
+}
+.donationReportExperience .reportDescriptionSection {
+  margin-top: 26px; padding-top: 25px; border-top: 1px solid var(--ui-line);
+}
+.donationReportExperience .reportDescriptionSection .pointSectionHeading { margin-bottom: 16px; }
+.donationReportExperience .reportPortCard .field { display: grid; gap: 8px; }
+.donationReportExperience .reportPortCard .field label { color: var(--ui-text); font-size: 12px; font-weight: 710; }
+.donationReportExperience .reportPortCard .field textarea {
+  width: 100%; min-height: 132px; padding: 13px 14px;
+  border: 1px solid var(--ui-line); border-radius: 13px;
+  background: var(--ui-surface-soft); color: var(--ui-ink); font-size: 13px;
+  line-height: 1.65; resize: vertical;
+}
+.donationReportExperience .reportPortCard .field textarea:focus {
+  outline: none; border-color: var(--ui-primary); box-shadow: 0 0 0 3px rgba(56,189,248,.12);
+}
+.donationReportExperience .reportPortCard .field textarea::placeholder { color: var(--ui-muted); }
+.donationReportExperience .reportDescriptionCounter { margin-top: 1px; color: var(--ui-muted); font-size: 11px; }
+.donationReportExperience .reportErrorNotice {
+  display: flex; gap: 10px; align-items: center; margin: 18px 0 0;
+  background: var(--ui-danger-soft); border-color: var(--ui-danger-line); color: var(--ui-danger);
+  font-size: 12px;
+}
+.donationReportExperience .reportErrorNotice svg { flex: 0 0 auto; }
+.donationReportExperience .reportPortActions {
+  display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 11px;
+  padding-top: 20px; margin-top: 22px; border-top: 1px solid var(--ui-line);
+}
+.donationReportExperience .reportPortActions .button {
+  display: inline-flex; justify-content: center; align-items: center; gap: 9px;
+  min-width: 142px; min-height: 46px; padding: 10px 16px;
+  border-radius: 12px; background: var(--ui-surface-soft); border: 1px solid var(--ui-line);
+  color: var(--ui-text); font-size: 12px; text-decoration: none;
+}
+.donationReportExperience .reportPortActions .button.primary {
+  color: var(--ui-primary-contrast); background: var(--ui-primary); border-color: var(--ui-primary);
+}
+.donationReportExperience .reportPortActions .button.primary:hover { background: var(--ui-primary-hover); }
+.donationReportGuide {
+  display: flex; flex-direction: column; gap: 13px;
+  padding: 28px 23px; border: 1px solid var(--ui-line); border-radius: 20px;
+  color: var(--ui-text);
+  background: radial-gradient(ellipse at 25% 5%,rgba(56,189,248,.12),transparent 48%),var(--ui-surface);
+  box-shadow: var(--ui-shadow-sm);
+}
+.donationReportGuideIcon {
+  display: grid; place-items: center; width: 54px; height: 54px;
+  border-radius: 16px; background: var(--ui-primary-soft); color: var(--ui-primary);
+}
+.donationReportGuideEyebrow { font-size: 10px; font-weight: 820; color: var(--ui-primary); letter-spacing: .15em; }
+.donationReportGuide h2 { font-size: 19px; line-height: 1.4; margin: 0; color: var(--ui-ink); }
+.donationReportGuide > p { margin: 0; color: var(--ui-muted); font-size: 12px; line-height: 1.75; }
+.donationReportGuideSteps { display: grid; gap: 10px; margin: 11px 0; }
+.donationReportGuideSteps > div { display: flex; gap: 11px; align-items: center; padding: 12px; border: 1px solid var(--ui-line); background: rgba(32,45,66,.7); border-radius: 11px; }
+.donationReportGuideSteps span { color: var(--ui-primary); font-size: 11px; font-weight: 830; }
+.donationReportGuideSteps strong { font-size: 11px; font-weight: 710; color: var(--ui-text); }
+.donationReportGuide .donationReportGuideFoot {
+  display: flex; align-items: start; gap: 8px; margin: 0; padding-top: 15px;
+  border-top: 1px solid var(--ui-line); font-size: 11px;
+}
+.donationReportGuideFoot svg { flex: 0 0 auto; color: var(--ui-success); }
+
+@media (max-width: 960px) {
+  .donationDetailExperience .pointHeroCard.card { grid-template-columns: 1fr; gap: 18px; }
+  .donationDetailExperience .pointPhotoButton, .donationDetailExperience .pointHeroImage { min-height: 350px; height: 350px; }
+  .donationDetailExperience .pointHeroFallback { min-height: 350px; }
+  .donationDetailExperience .pointActionGrid { grid-template-columns: 1fr 1fr; }
+  .donationReportLayout { grid-template-columns: 1fr; }
+  .donationReportGuide { display: none; }
+}
+@media (max-width: 660px) {
+  .donationDetailExperience.pointDetailPage, .donationReportExperience.reportPortPage {
+    min-height: calc(100dvh - 68px); padding: 18px 14px 55px;
+  }
+  .pointBreadcrumbs { margin-bottom: 17px; }
+  .donationDetailExperience .pointDetailHeader,
+  .donationReportExperience .reportPortHeader { flex-direction: column; align-items: stretch; gap: 15px; padding: 0 0 19px; }
+  .donationDetailExperience .pointDetailHeader h1, .donationReportExperience .reportPortHeader h1 { font-size: clamp(27px,7vw,33px); margin-top: 9px; }
+  .donationDetailExperience .pointBackButton, .donationReportExperience .reportPortHeader .button { width: 100%; }
+  .donationDetailExperience .pointHeroCard.card { padding: 13px; border-radius: 16px; gap: 16px; margin-bottom: 15px; }
+  .donationDetailExperience .pointPhotoButton, .donationDetailExperience .pointHeroImage {
+    height: 265px; min-height: 265px; border-radius: 13px;
+  }
+  .donationDetailExperience .pointHeroFallback { min-height: 265px; border-radius: 13px; }
+  .donationDetailExperience .pointPhotoHint { bottom: 10px; right: 10px; font-size: 10px; }
+  .donationDetailExperience .pointThumbButton { width: 62px; height: 54px; flex-basis: 62px; }
+  .donationDetailExperience .pointHeroContent { padding: 5px 1px 2px; }
+  .donationDetailExperience .pointHeroTopline { margin-bottom: 18px; }
+  .donationDetailExperience .pointQuantityNumber { font-size: 33px; }
+  .donationDetailExperience .pointHeroContent h2 { font-size: 22px; }
+  .donationDetailExperience .pointDescription { font-size: 12px; margin-bottom: 18px; }
+  .donationDetailExperience .pointMetaGrid { grid-template-columns: 1fr 1fr; gap: 7px; }
+  .donationDetailExperience .pointMetaItem { padding: 11px; }
+  .donationDetailExperience .pointMetaItem:first-child { grid-column: 1/-1; }
+  .donationDetailExperience .pointActionGrid { grid-template-columns: 1fr; gap: 14px; }
+  .donationDetailExperience .pointActionGrid > .card { padding: 18px; border-radius: 16px; }
+  .donationDetailExperience .pointManageActions { grid-template-columns: 1fr 1fr; }
+  .pointLightbox img { max-width: 100%; max-height: 74dvh; }
+  .pointLightboxArrow { width: 38px; height: 38px; top: auto; bottom: 25px; transform: none; }
+  .pointLightboxArrow--prev { left: 30px; }
+  .pointLightboxArrow--next { right: 30px; }
+  .pointConfirmModal .ui-modal__actions { display: grid; grid-template-columns: 1fr; }
+  .pointConfirmModal .ui-modal__actions .button { width: 100%; }
+  .donationReportExperience .reportPortHeader p { font-size: 12px; }
+  .donationReportExperience .reportPortCard.card { padding: 18px 15px; border-radius: 16px; }
+  .donationReportExperience .reportReasonOption { min-height: 68px; padding: 11px; gap: 10px; }
+  .donationReportExperience .reportReasonIcon { width: 37px; height: 37px; flex-basis: 37px; }
+  .donationReportExperience .reportPortActions { flex-direction: column-reverse; }
+  .donationReportExperience .reportPortActions .button { width: 100%; }
+}
+@media (max-width: 360px) {
+  .donationDetailExperience .pointMetaGrid { grid-template-columns: 1fr; }
+  .donationDetailExperience .pointMetaItem:first-child { grid-column: auto; }
+  .donationDetailExperience .pointManageActions { grid-template-columns: 1fr; }
+  .donationDetailExperience .pointManageActions .button.danger { grid-column: auto; }
+  .donationReportExperience .reportReasonCopy small { font-size: 10px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pointLightbox { animation: none; }
+  .donationDetailExperience .pointHeroImage, .donationReportExperience .reportReasonOption { transition: none; }
+}

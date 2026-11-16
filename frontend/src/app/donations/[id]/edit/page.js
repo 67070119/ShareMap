@@ -88,12 +88,12 @@ export default function EditDonationPage() {
   }
 
   if (authLoading || !donation) {
-    return <main className="page createPointPage"><div className="centerState">{error || 'กำลังโหลด...'}</div></main>;
+    return <main className="page createPointPage donationEditorPage"><div className="centerState">{error || 'กำลังโหลด...'}</div></main>;
   }
   if (!user) return null;
   if (donation.ownerId !== user.id) {
     return (
-      <main className="page narrow">
+      <main className="page narrow donationEditorPage donationEditorStatePage">
         <section className="card">
           <div className="errorBox">คุณไม่มีสิทธิ์แก้ไขโพสต์นี้</div>
           <Link href={`/donations/${id}`} className="button">กลับไปหน้ารายละเอียด</Link>
@@ -104,8 +104,8 @@ export default function EditDonationPage() {
 
   if (partialUpload) {
     return (
-      <main className="page narrow">
-        <div className="pageTitle">
+      <main className="page narrow donationEditorPage donationEditorStatePage">
+        <div className="pageTitle donationEditorHeading">
           <div>
             <span className="eyebrow">บันทึกข้อมูลแล้ว</span>
             <h1>อัปโหลดรูปใหม่ยังไม่สำเร็จ</h1>
@@ -127,9 +127,10 @@ export default function EditDonationPage() {
   }
 
   return (
-    <main className="page createPointPage">
-      <div className="pageTitle">
+    <main className="page createPointPage donationEditorPage">
+      <div className="pageTitle donationEditorHeading">
         <div>
+          <div className="donationEditorBreadcrumb"><Link href={`/donations/${id}`}>รายละเอียดโพสต์</Link><span aria-hidden="true">/</span><strong>แก้ไขของบริจาค</strong></div>
           <span className="eyebrow">แก้ไขจุดบริจาค</span>
           <h1>แก้ไขของบริจาค</h1>
           <p>ปรับตำแหน่ง รูปภาพ รายละเอียด และช่วงเวลาของโพสต์นี้</p>

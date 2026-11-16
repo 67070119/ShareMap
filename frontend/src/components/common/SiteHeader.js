@@ -2,68 +2,46 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
 import { useAuth } from '../../lib/useAuth';
+import AppShellLink from './Brand';
+import MobileNavigation from './MobileNavigation';
+import NavIcon from './NavIcon';
 
 export default function SiteHeader() {
   const pathname = usePathname();
   const { user, loading, logout } = useAuth();
-  const [menuPath, setMenuPath] = useState(null);
-  const menuOpen = menuPath === pathname;
 
   const mapHome = pathname === '/';
   const isAdminPage = pathname.startsWith('/admin');
   const isNavigationPage = /^\/donations\/[^/]+\/navigate$/.test(pathname);
-
   if (isAdminPage || isNavigationPage) return null;
 
-  const closeMenu = () => setMenuPath(null);
+  const items = [
+    { href: '/', label: 'แผนที่', icon: 'map' },
+    ...(!loading && user ? [{ href: '/donations/new', label: '+ เพิ่มของบริจาค', icon: 'plus' }] : []),
+    ...(!loading && user?.role === 'ADMIN' ? [{ href: '/admin', label: 'Dashboard', icon: 'dashboard' }] : []),
+    ...(!loading && !user ? [{ href: '/login', label: 'เข้าสู่ระบบ', icon: 'users' }] : []),
+  ];
 
   async function handleLogout() {
-    closeMenu();
     await logout();
     window.location.replace('/');
   }
 
   return (
-    <header className={`topbar${mapHome ? ' mapTopbar' : ''}`}>
-      <Link className="brand" href="/" onClick={closeMenu} aria-label="OGTB Donation Map">
-        <span className="brandMark" aria-hidden="true"><span className="brandGlyph" /></span>
-        <span>Donation Map<small>OGTB COMMUNITY</small></span>
-      </Link>
-
-      <nav className="navActions navDesktopActions" aria-label="เมนูหลัก">
-        <Link href="/" className="navLink">แผนที่</Link>
-        {!loading && user?.role === 'ADMIN' && <Link href="/admin" className="navLink">Dashboard</Link>}
-        {!loading && user && <Link href="/donations/new" className="button soft">+ เพิ่มของบริจาค</Link>}
-        {!loading && !user && <Link href="/login" className="button primary">เข้าสู่ระบบ</Link>}
-        {!loading && user && <button type="button" className="button ghost" onClick={handleLogout}>ออกจากระบบ</button>}
+    <header className={`topbar appHeader${mapHome ? ' mapTopbar' : ''}`}>
+      <AppShellLink />
+      <nav className="appHeaderLinks navDesktopActions" aria-label="เมนูหลัก">
+        <Link href="/" className={`appHeaderLink${mapHome ? ' isActive' : ''}`} aria-current={mapHome ? 'page' : undefined}><NavIcon name="map"/>แผนที่</Link>
+        {!loading && user?.role === 'ADMIN' && <Link href="/admin" className="appHeaderLink"><NavIcon name="dashboard"/>Dashboard</Link>}
       </nav>
-
-      <div className="navMobileWrap">
-        <button
-          type="button"
-          className={`navMenuButton${menuOpen ? ' isOpen' : ''}`}
-          aria-label={menuOpen ? 'ปิดเมนู' : 'เปิดเมนู'}
-          aria-expanded={menuOpen}
-          aria-controls="ogtb-mobile-menu"
-          onClick={() => setMenuPath(menuOpen ? null : pathname)}
-        >
-          <span />
-          <span />
-          <span />
-        </button>
-
-        {menuOpen && (
-          <nav id="ogtb-mobile-menu" className="navMobileMenu" aria-label="เมนูมือถือ">
-            <Link href="/" className="navMobileItem" onClick={closeMenu}>แผนที่</Link>
-            {!loading && user?.role === 'ADMIN' && <Link href="/admin" className="navMobileItem" onClick={closeMenu}>Dashboard</Link>}
-            {!loading && user && <Link href="/donations/new" className="navMobileItem navMobilePrimary" onClick={closeMenu}>+ เพิ่มของบริจาค</Link>}
-            {!loading && !user && <Link href="/login" className="navMobileItem navMobilePrimary" onClick={closeMenu}>เข้าสู่ระบบ</Link>}
-            {!loading && user && <button type="button" className="navMobileItem navMobileLogout" onClick={handleLogout}>ออกจากระบบ</button>}
-          </nav>
-        )}
+      <div className="appHeaderActions navDesktopActions">
+        {!loading && user && <Link href="/donations/new" className="appHeaderAction appHeaderAction--primary"><NavIcon name="plus"/>เพิ่มของบริจาค</Link>}
+        {!loading && !user && <Link href="/login" className="appHeaderAction appHeaderAction--primary">เข้าสู่ระบบ<NavIcon name="arrow" size={17}/></Link>}
+        {!loading && user && <button type="button" className="appHeaderAction appHeaderAction--subtle" onClick={handleLogout}><NavIcon name="logout" size={17}/>ออกจากระบบ</button>}
+        {loading && <span className="appHeaderAuthLoading" aria-label="กำลังโหลดข้อมูลผู้ใช้"/>}
       </div>
+      <MobileNavigation id="ogtb-mobile-menu" label="เมนูหลักบนมือถือ" items={items} footer={!loading && user ? <button type="button" className="appNavLogout" onClick={handleLogout}><NavIcon name="logout"/>ออกจากระบบ</button> : null}/>
     </header>
   );
 }

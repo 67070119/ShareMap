@@ -1,0 +1,359 @@
+/* OGTB v2 — Phase 7 fullscreen navigation experience.
+ * Visual layer only: routing, GPS watches, cooldown, progress and availability stay in page.js.
+ */
+.navExperienceV2 {
+  --nav-surface: var(--ui-surface);
+  --nav-surface-soft: var(--ui-surface-soft);
+  --nav-ink: var(--ui-ink);
+  --nav-text: var(--ui-text);
+  --nav-muted: var(--ui-muted);
+  --nav-line: var(--ui-line);
+  --nav-primary: var(--ui-primary);
+  --nav-danger: var(--ui-danger);
+  --nav-danger-soft: var(--ui-danger-soft);
+  --nav-shadow-sm: var(--ui-shadow-sm);
+  font-family: "Noto Sans Thai", system-ui, -apple-system, "Segoe UI", sans-serif;
+  background: var(--ui-map-bg); color: var(--ui-ink); isolation: isolate;
+}
+.navExperienceV2 .navMapStage,
+.navExperienceV2 .navigationMapCanvas,
+.navExperienceV2 .navigationLeafletCanvas { background: var(--ui-map-bg); }
+.navExperienceV2 .navigationLeafletCanvas .leaflet-tile {
+  filter: invert(.91) hue-rotate(174deg) saturate(.82) brightness(.79) contrast(.94);
+}
+.navExperienceV2 .leaflet-tooltip {
+  padding: 7px 11px; border-radius: 10px; border: 1px solid var(--ui-line);
+  background: var(--ui-surface-glass); color: var(--ui-ink);
+  box-shadow: var(--ui-shadow-sm); font: 700 11px/1.4 "Noto Sans Thai", system-ui, sans-serif;
+}
+.navExperienceV2 .leaflet-tooltip::before { border-top-color: var(--ui-surface); }
+.navExperienceV2 .leaflet-control-attribution {
+  padding: 3px 7px; color: var(--ui-muted) !important;
+  background: var(--ui-surface-glass) !important; border-radius: 7px;
+}
+.navExperienceV2 .leaflet-control-attribution a { color: var(--ui-primary) !important; }
+.navExperienceV2 .navTopBar { align-items: center; gap: 11px; }
+.navExperienceV2 .navRoundButton {
+  display: grid; place-items: center; width: 50px; height: 50px;
+  border-radius: 15px; background: var(--ui-surface-glass);
+  border: 1px solid var(--ui-line); color: var(--ui-ink);
+  box-shadow: var(--ui-shadow);
+}
+.navExperienceV2 .navRoundButton:hover { border-color: var(--ui-primary); color: var(--ui-primary); }
+.navExperienceV2 .navBackIcon { transform: rotate(180deg); }
+.navExperienceV2 .navDestinationCompact {
+  min-height: 50px; gap: 5px; padding: 9px 15px; border-radius: 15px;
+  background: var(--ui-surface-glass); border-color: var(--ui-line);
+  box-shadow: var(--ui-shadow); max-width: 390px;
+}
+.navExperienceV2 .navDestinationCompact span {
+  display: inline-flex; gap: 7px; align-items: center; color: var(--ui-primary);
+  font-size: 10px; font-weight: 800; letter-spacing: .09em;
+}
+.navExperienceV2 .navDestinationCompact strong {
+  color: var(--ui-ink); font-size: 13px; font-weight: 720;
+}
+.navExperienceV2 .navHeaderTag {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 37px;
+  padding: 8px 13px; border: 1px solid var(--ui-line);
+  border-radius: 12px; background: var(--ui-surface-glass);
+  color: var(--ui-muted); font-size: 10px; letter-spacing: .1em;
+  font-weight: 850; box-shadow: var(--ui-shadow-sm); white-space: nowrap;
+}
+.navExperienceV2 .navHeaderTag span { width: 7px; height: 7px; border-radius: 50%; background: var(--ui-primary); }
+.navExperienceV2 .navMapStatusBar {
+  position: absolute; z-index: 830; top: calc(var(--nav-edge-top) + 66px);
+  right: var(--nav-edge-right); display: inline-flex; align-items: center;
+  gap: 8px; min-height: 38px; max-width: calc(100% - 30px); padding: 9px 12px;
+  border: 1px solid var(--ui-line); border-radius: 12px; box-shadow: var(--ui-shadow-sm);
+  background: var(--ui-surface-glass); color: var(--ui-text);
+  font-size: 10px; font-weight: 730;
+}
+.navExperienceV2 .navMapStatusBar strong { color: var(--ui-primary); font-size: 10px; }
+.navExperienceV2 .navMapStatusDot {
+  width: 8px; height: 8px; flex: 0 0 8px;
+  border-radius: 50%; background: var(--ui-warning);
+  box-shadow: 0 0 0 3px rgba(253,186,116,.12);
+}
+.navExperienceV2 .navMapStatusDot.isTracking {
+  background: var(--ui-success); box-shadow: 0 0 0 3px rgba(52,211,153,.13);
+}
+.navExperienceV2 .navMapControls {
+  top: calc(var(--nav-edge-top) + 115px); right: var(--nav-edge-right);
+}
+.navExperienceV2.navActiveExperience .navMapControls { top: calc(var(--nav-edge-top) + 115px); }
+.navExperienceV2 .navMapButton {
+  width: 48px; height: 48px; border-radius: 14px;
+  background: var(--ui-surface-glass); color: var(--ui-primary); border: 1px solid var(--ui-line);
+  box-shadow: var(--ui-shadow); transition: border-color .15s, background .15s;
+}
+.navExperienceV2 .navMapButton:hover:not(:disabled) { border-color: var(--ui-primary); background: var(--ui-surface-raised); }
+.navExperienceV2 .navRecenterIcon { box-shadow: inset 0 0 0 5px var(--ui-surface-soft); }
+.navExperienceV2 .navRecenterNeeded {
+  color: var(--ui-primary-contrast); background: var(--ui-primary); border-color: var(--ui-primary);
+}
+.navExperienceV2 .navRecenterNeeded .navRecenterIcon { box-shadow: inset 0 0 0 5px var(--ui-primary); }
+
+/* Desktop navigation panel: left-aligned for an unobstructed map. */
+.navExperienceV2 .navBottomSheet {
+  top: 107px; bottom: 22px; left: var(--nav-edge-x); right: auto;
+  transform: none; width: min(410px,calc(100% - 95px)); max-width: 410px;
+  height: auto; min-height: 0;
+  max-height: calc(100dvh - 129px - env(safe-area-inset-top));
+  display: flex; flex-direction: column; align-items: stretch;
+  padding: 8px 17px 17px; overflow-y: auto;
+  scrollbar-width: thin; scrollbar-color: var(--ui-line-strong) transparent;
+  border: 1px solid var(--ui-line); border-radius: 23px;
+  background: rgba(18,28,44,.97); color: var(--ui-ink);
+  box-shadow: 0 24px 65px rgba(2,9,20,.50);
+  backdrop-filter: blur(23px);
+}
+.navExperienceV2 .navSheetHandleButton {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 6px; flex: 0 0 34px; height: 34px; width: 100%;
+  padding: 6px 12px; margin: 0 auto 6px;
+  color: var(--ui-muted); font: inherit; font-size: 10px; font-weight: 690;
+}
+.navExperienceV2 .navSheetHandle {
+  height: 4px; width: 37px; margin: 0; flex: 0 0 4px;
+  background: var(--ui-line-strong); border-radius: 8px;
+}
+.navExperienceV2 .navSheetHandleText { color: var(--ui-muted); }
+.navExperienceV2 .navSheetHeader { align-items: center; gap: 14px; }
+.navExperienceV2 .navSheetHeaderSimple { min-height: 84px; margin: 3px 0 5px; }
+.navExperienceV2 .navEyebrow {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 10px; letter-spacing: .09em; font-weight: 790; color: var(--ui-primary);
+}
+.navExperienceV2 .navSheetHeaderSimple h1 {
+  margin: 9px 0 4px; color: var(--ui-ink); font-size: 28px;
+  font-weight: 820; line-height: 1.2;
+}
+.navExperienceV2 .navSheetHeaderSimple p { margin: 7px 0 0; color: var(--ui-muted); font-size: 12px; line-height: 1.6; }
+.navExperienceV2 .navDistanceSummary {
+  min-width: 96px; padding: 12px 11px; text-align: right;
+  border: 1px solid var(--ui-line); border-radius: 14px;
+  color: var(--ui-ink); background: var(--ui-surface-soft);
+}
+.navExperienceV2 .navDistanceSummary strong { color: var(--ui-primary); font-size: 21px; }
+.navExperienceV2 .navDistanceSummary span { color: var(--ui-muted); font-size: 10px; }
+.navExperienceV2 .navInlineNotice {
+  display: flex; flex-wrap: wrap; align-items: flex-start; gap: 9px;
+  width: 100%; margin: 9px 0 3px; padding: 12px 13px;
+  border-radius: 12px; line-height: 1.55; font-size: 11px;
+}
+.navExperienceV2 .navInlineNotice svg { flex: 0 0 16px; }
+.navExperienceV2 .navInlineNotice > span { flex: 1 1 145px; }
+.navExperienceV2 .routeErrorNotice {
+  color: var(--ui-danger); border-color: var(--ui-danger-line);
+  background: var(--ui-danger-soft);
+}
+.navExperienceV2 .navOffRouteNotice {
+  color: var(--ui-warning); border-color: var(--ui-warning-line);
+  background: var(--ui-warning-soft);
+}
+.navExperienceV2 .navRecoveryNotice {
+  color: var(--ui-success); border-color: var(--ui-success-line);
+  background: var(--ui-success-soft);
+}
+.navExperienceV2 .navInlineRetry { margin-left: auto; padding: 1px 4px; font-size: 11px; }
+.navExperienceV2 .navGpsPill {
+  min-height: 44px; padding: 11px 13px; margin: 13px 0 8px;
+  border: 1px solid var(--ui-line); border-radius: 13px;
+  background: var(--ui-surface-soft); color: var(--ui-text);
+  font-size: 11px;
+}
+.navExperienceV2 .navGpsPill .navGpsPillLabel { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; }
+.navExperienceV2 .navGpsPill.gpsGood { border-color: var(--ui-success-line); color: var(--ui-success); }
+.navExperienceV2 .navGpsPill.gpsFair { border-color: var(--ui-warning-line); color: var(--ui-warning); }
+.navExperienceV2 .navGpsPill.gpsPoor { border-color: var(--ui-danger-line); color: var(--ui-danger); }
+.navExperienceV2 .navGpsPill strong { font-size: 12px; color: inherit; }
+.navExperienceV2 .navRouteProgress { display: grid; gap: 9px; margin: 12px 0 9px; }
+.navExperienceV2 .navRouteProgressHeader { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 11px; color: var(--ui-muted); }
+.navExperienceV2 .navRouteProgressHeader strong { color: var(--ui-primary); font-size: 12px; }
+.navExperienceV2 .navRouteProgressTrack {
+  height: 7px; overflow: hidden; border-radius: 999px;
+  background: var(--ui-line); box-shadow: inset 0 1px 2px rgba(0,0,0,.13);
+}
+.navExperienceV2 .navRouteProgressTrack span {
+  display: block; height: 100%; border-radius: 999px; background: var(--ui-primary);
+  transition: width .22s ease;
+}
+
+/* OSRM step list is informational, not a second navigation state machine. */
+.navExperienceV2 .navTurnList { margin: 15px 0 12px; padding-top: 13px; border-top: 1px solid var(--ui-line); }
+.navExperienceV2 .navTurnHeading { display: flex; justify-content: space-between; gap: 8px; align-items: center; padding: 2px 0 11px; }
+.navExperienceV2 .navTurnHeading > span { display: inline-flex; gap: 9px; align-items: center; color: var(--ui-ink); font-size: 12px; font-weight: 750; }
+.navExperienceV2 .navTurnHeading svg { color: var(--ui-primary); }
+.navExperienceV2 .navTurnHeading small { color: var(--ui-muted); font-size: 10px; white-space: nowrap; }
+.navExperienceV2 .navTurnItems { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+.navExperienceV2 .navTurnItem {
+  display: flex; align-items: center; gap: 10px; min-height: 54px;
+  padding: 10px; border: 1px solid var(--ui-line); border-radius: 12px;
+  background: rgba(32,45,66,.64);
+}
+.navExperienceV2 .navTurnGlyph {
+  width: 33px; height: 33px; flex: 0 0 33px;
+  display: grid; place-items: center; border-radius: 10px;
+  background: var(--ui-surface-raised); color: var(--ui-text);
+}
+.navExperienceV2 .navTurnGlyph.isFirst { background: var(--ui-primary-soft); color: var(--ui-primary); }
+.navExperienceV2 .navTurnCopy { min-width: 0; display: grid; gap: 4px; flex: 1 1 auto; }
+.navExperienceV2 .navTurnCopy strong { color: var(--ui-ink); font-size: 11px; line-height: 1.35; overflow-wrap: anywhere; }
+.navExperienceV2 .navTurnCopy small { color: var(--ui-muted); font-size: 10px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.navExperienceV2 .navTurnDistance { color: var(--ui-primary); font-size: 11px; white-space: nowrap; font-weight: 730; }
+.navExperienceV2 .navPrimaryActions {
+  position: sticky; bottom: -17px; z-index: 1;
+  margin-top: auto; padding-top: 15px; padding-bottom: 1px;
+  background: linear-gradient(to bottom, rgba(18,28,44,.86), rgba(18,28,44,.99) 25%);
+}
+.navExperienceV2 .navStartButton,
+.navExperienceV2 .navSecondaryButton {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  width: 100%; min-height: 49px; padding: 10px 14px;
+  border-radius: 12px; font-size: 12px; font-weight: 790;
+}
+.navExperienceV2 .navStartButton {
+  background: var(--ui-primary); border: 1px solid var(--ui-primary);
+  color: var(--ui-primary-contrast); box-shadow: 0 8px 22px rgba(2,15,29,.16);
+}
+.navExperienceV2 .navStartButton:hover:not(:disabled) { background: var(--ui-primary-hover); }
+.navExperienceV2 .navStopButton {
+  color: var(--ui-danger); background: var(--ui-danger-soft); border-color: var(--ui-danger-line);
+}
+.navExperienceV2 .navStopButton:hover:not(:disabled) { background: #572638; }
+.navExperienceV2 .navSecondaryButton {
+  border: 1px solid var(--ui-line); background: var(--ui-surface-soft); color: var(--ui-text);
+}
+.navExperienceV2 .navActiveTopBar {
+  min-height: 83px; grid-template-columns: 54px minmax(0,1fr);
+  padding: 13px 16px; gap: 12px;
+  border: 1px solid var(--ui-line); border-radius: 18px;
+  background: var(--ui-surface-glass); color: var(--ui-ink);
+  box-shadow: var(--ui-shadow-lg);
+}
+.navExperienceV2 .navManeuverIcon {
+  width: 54px; height: 54px; background: var(--ui-primary-soft);
+  color: var(--ui-primary); border-color: rgba(56,189,248,.3);
+  border-radius: 15px; font-size: 26px;
+}
+.navExperienceV2 .navManeuverIcon.arrived {
+  color: var(--ui-success); background: var(--ui-success-soft);
+  border-color: var(--ui-success-line);
+}
+.navExperienceV2 .navManeuverCopy { gap: 5px; }
+.navExperienceV2 .navManeuverOverline { color: var(--ui-primary); font-size: 9px; font-weight: 810; letter-spacing: .1em; }
+.navExperienceV2 .navManeuverCopy small { color: var(--ui-muted); font-size: 11px; }
+.navExperienceV2 .navManeuverCopy strong { color: var(--ui-ink); font-size: 15px; white-space: normal; line-height: 1.4; }
+.navExperienceV2.navActiveExperience .navMapStatusBar { top: calc(var(--nav-edge-top) + 98px); }
+.navExperienceV2.navActiveExperience .navMapControls { top: calc(var(--nav-edge-top) + 146px); }
+.navExperienceV2 .navBottomSheet.navSheetCollapsed {
+  top: auto; bottom: var(--nav-edge-bottom) !important; left: var(--nav-edge-x);
+  transform: none; width: 50px !important; height: 50px; max-height: 50px;
+  border-radius: 16px !important; border: 1px solid var(--ui-line);
+  background: var(--ui-surface-glass); padding: 0 !important;
+  box-shadow: var(--ui-shadow);
+}
+.navExperienceV2 .navBottomSheet.navSheetCollapsed .navSheetHandleButton {
+  width: 50px; height: 50px; flex: 0 0 50px; color: var(--ui-primary);
+}
+.navExperienceV2 .navBottomSheet.navSheetCollapsed .navSheetHandleButton::after { content: "⌃"; font-size: 23px; }
+.navExperienceV2 .navBottomSheet.navSheetCollapsed .navSheetHandleText { display: none; }
+
+/* Standalone errors while route is loading or unavailable. */
+.navStandaloneState {
+  background: radial-gradient(ellipse at 50% 30%, rgba(56,189,248,.09),transparent 48%),var(--ui-bg);
+  color: var(--ui-ink);
+  font-family: "Noto Sans Thai",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+.navStandaloneState .navStateCard {
+  justify-items: center; gap: 13px; padding: 32px 25px;
+  border: 1px solid var(--ui-line); border-radius: 22px;
+  background: var(--ui-surface); color: var(--ui-text); box-shadow: var(--ui-shadow);
+}
+.navStandaloneState .navStateSymbol {
+  display: grid; place-items: center; width: 58px; height: 58px;
+  border-radius: 18px; color: var(--ui-primary); background: var(--ui-primary-soft);
+}
+.navStandaloneState .navStateSymbol--error { color: var(--ui-danger); background: var(--ui-danger-soft); }
+.navStandaloneState .navStateTitle { margin: 2px 0; color: var(--ui-ink); font-size: 20px; }
+.navStandaloneState .navStateSubtext { color: var(--ui-muted); font-size: 12px; }
+.navStandaloneState .navStateError {
+  width: 100%; border-color: var(--ui-danger-line);
+  background: var(--ui-danger-soft); color: var(--ui-danger);
+}
+.navStandaloneState .navStateButton {
+  display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+  width: 100%; background: var(--ui-primary); color: var(--ui-primary-contrast);
+  border: 1px solid var(--ui-primary);
+}
+@media (max-width: 900px) {
+  .navExperienceV2 .navBottomSheet {
+    top: auto; bottom: var(--nav-edge-bottom); left: 50%; right: auto;
+    transform: translateX(-50%); width: min(540px,calc(100% - 28px)); max-width: 540px;
+    height: auto; max-height: min(65dvh, 520px);
+    border-radius: 22px; padding: 7px 16px 15px;
+  }
+  .navExperienceV2 .navBottomSheet.navSheetCollapsed { left: 50%; transform: translateX(-50%); }
+  .navExperienceV2 .navHeaderTag { display: none; }
+  .navExperienceV2 .navPrimaryActions { bottom: -15px; }
+}
+@media (max-width: 560px) {
+  .navExperienceV2 .navTopBar { gap: 8px; }
+  .navExperienceV2 .navRoundButton { width: 44px; height: 44px; border-radius: 13px; }
+  .navExperienceV2 .navDestinationCompact { min-height: 46px; max-width: none; padding: 7px 12px; }
+  .navExperienceV2 .navDestinationCompact span { font-size: 9px; }
+  .navExperienceV2 .navDestinationCompact strong { font-size: 11px; }
+  .navExperienceV2 .navMapStatusBar { top: calc(var(--nav-edge-top) + 58px); font-size: 9px; }
+  .navExperienceV2 .navMapControls { top: calc(var(--nav-edge-top) + 105px); }
+  .navExperienceV2.navActiveExperience .navMapStatusBar { top: calc(var(--nav-edge-top) + 77px); }
+  .navExperienceV2.navActiveExperience .navMapControls { top: calc(var(--nav-edge-top) + 123px); }
+  .navExperienceV2 .navBottomSheet {
+    width: 100%; max-width: 100%; max-height: min(63dvh, 540px);
+    bottom: 0; padding: 7px 15px max(14px,env(safe-area-inset-bottom));
+    border: 1px solid var(--ui-line); border-left: 0; border-right: 0; border-bottom: 0;
+    border-radius: 23px 23px 0 0;
+  }
+  .navExperienceV2 .navSheetHeaderSimple { min-height: 75px; }
+  .navExperienceV2 .navSheetHeaderSimple h1 { font-size: 25px; }
+  .navExperienceV2 .navDistanceSummary { min-width: 78px; padding: 9px 8px; }
+  .navExperienceV2 .navDistanceSummary strong { font-size: 18px; }
+  .navExperienceV2 .navBottomSheet.navSheetCollapsed {
+    left: 50%; bottom: max(12px,env(safe-area-inset-bottom)) !important;
+    border-radius: 15px !important; width: 48px !important; height: 48px !important;
+  }
+  .navExperienceV2 .navBottomSheet.navSheetCollapsed .navSheetHandleButton { width: 48px; height: 48px; }
+  .navExperienceV2 .navPrimaryActions { bottom: calc(-14px - env(safe-area-inset-bottom)); }
+  .navExperienceV2 .navActiveTopBar {
+    min-height: 75px; gap: 9px; padding: 9px 12px;
+    grid-template-columns: 45px minmax(0,1fr); border-radius: 15px;
+  }
+  .navExperienceV2 .navManeuverIcon { width: 45px; height: 45px; font-size: 22px; border-radius: 12px; }
+  .navExperienceV2 .navManeuverCopy strong { font-size: 12px; }
+  .navExperienceV2 .navManeuverOverline { font-size: 8px; }
+  .navExperienceV2 .navTurnItem { min-height: 48px; padding: 9px; }
+}
+@media (max-width: 355px) {
+  .navExperienceV2 .navBottomSheet { padding-left: 11px; padding-right: 11px; }
+  .navExperienceV2 .navSheetHeaderSimple h1 { font-size: 21px; }
+  .navExperienceV2 .navTurnCopy strong { font-size: 10px; }
+  .navExperienceV2 .navTurnCopy small { font-size: 9px; }
+}
+@media (max-height: 570px) and (orientation: landscape) {
+  .navExperienceV2 .navBottomSheet {
+    top: var(--nav-edge-top); bottom: var(--nav-edge-bottom); left: var(--nav-edge-x);
+    max-height: calc(100dvh - var(--nav-edge-top) - var(--nav-edge-bottom));
+    width: min(390px,46vw); max-width: 390px;
+    transform: none; border: 1px solid var(--ui-line); border-radius: 20px;
+  }
+  .navExperienceV2 .navBottomSheet.navSheetCollapsed { left: var(--nav-edge-x); transform: none; }
+  .navExperienceV2 .navActiveTopBar {
+    left: auto; right: var(--nav-edge-right);
+    width: min(470px,47vw); transform: none;
+  }
+  .navExperienceV2 .navTopBar { left: 50%; }
+  .navExperienceV2 .navMapStatusBar { top: calc(var(--nav-edge-top) + 58px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .navExperienceV2 .navRouteProgressTrack span { transition: none; }
+}

@@ -2,8 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import { useCallback, useEffect, useState } from 'react';
-import CategoryFilter from './CategoryFilter';
-import RadiusFilter from './RadiusFilter';
+import DonationResultsPanel from './DonationResultsPanel';
 import { api } from '../../lib/api';
 
 const DonationMap = dynamic(() => import('./DonationMap'), { ssr: false });
@@ -24,6 +23,9 @@ export default function HomeMapClient({
   const [locating, setLocating] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [selectedId, setSelectedId] = useState(null);
+  const [sheetExpanded, setSheetExpanded] = useState(false);
+  const [retryToken, setRetryToken] = useState(0);
 
   useEffect(() => {
     if (clearReturnQuery) {
@@ -66,6 +68,7 @@ export default function HomeMapClient({
   useEffect(() => {
     if (!userPosition) return undefined;
 
+    let active = true;
     const timer = setTimeout(async () => {
       const query = new URLSearchParams({
         lat: String(userPosition[0]),
@@ -77,17 +80,24 @@ export default function HomeMapClient({
       setLoading(true);
       setError('');
       try {
-        setDonations(await api(`/api/donations/nearby?${query}`));
+        const result = await api(`/api/donations/nearby?${query}`);
+        if (active) {
+          setDonations(result);
+          setSelectedId((current) => result.some((item) => item.id === current) ? current : null);
+        }
       } catch (requestError) {
-        setDonations([]);
-        setError(requestError.message || 'โหลดจุดบริจาคไม่สำเร็จ');
+        if (active) {
+          setDonations([]);
+          setSelectedId(null);
+          setError(requestError.message || 'โหลดจุดบริจาคไม่สำเร็จ');
+        }
       } finally {
-        setLoading(false);
+        if (active) setLoading(false);
       }
     }, SEARCH_DEBOUNCE_MS);
 
-    return () => clearTimeout(timer);
-  }, [userPosition, radiusKm, category]);
+    return () => { active = false; clearTimeout(timer); };
+  }, [userPosition, radiusKm, category, retryToken]);
 
   const returnParams = new URLSearchParams();
   if (category.trim()) returnParams.set('category', category.trim());
@@ -97,13 +107,38 @@ export default function HomeMapClient({
   const lowAccuracy = userAccuracy != null && userAccuracy > LOW_ACCURACY_METERS;
 
   return (
-    <main className="mapShell">
-      <DonationMap
-        donations={donations}
-        userPosition={userPosition}
-        userAccuracy={userAccuracy}
+    <main className="mapShell mapExperience">
+      <div className="mapStage">
+        <DonationMap
+          donations={donations}
+          userPosition={userPosition}
+          userAccuracy={userAccuracy}
+          radiusKm={radiusKm}
+          returnTo={mapReturnTo}
+          selectedId={selectedId}
+          onSelectDonation={setSelectedId}
+        />
+      </div>
+
+      <DonationResultsPanel
+        category={category}
+        onCategoryChange={setCategory}
         radiusKm={radiusKm}
+        onRadiusChange={setRadiusKm}
+        donations={donations}
+        selectedId={selectedId}
+        onSelectDonation={(id) => { setSelectedId(id); setSheetExpanded(false); }}
+        userPosition={userPosition}
+        locating={locating}
+        loading={loading}
+        error={error}
+        onRetryLocation={() => {
+          if (userPosition && !locating) setRetryToken((current) => current + 1);
+          else locate({ fresh: true });
+        }}
         returnTo={mapReturnTo}
+        expanded={sheetExpanded}
+        onExpandedChange={setSheetExpanded}
       />
 
       <div className="mapSummary" aria-live="polite">
@@ -124,18 +159,11 @@ export default function HomeMapClient({
         </div>
       )}
 
-      <button
-        className="mapFloatButton mapLocateButton"
-        type="button"
-        onClick={() => locate({ fresh: true })}
-        aria-label="ตำแหน่งฉัน"
-        disabled={locating}
-      >
+      <button className="mapFloatButton mapLocateButton" type="button"
+        onClick={() => locate({ fresh: true })} aria-label="ตำแหน่งฉัน"
+        disabled={locating}>
         {locating ? <span className="mapLocateSpinner" aria-hidden="true" /> : <span className="mapLocateGlyph" aria-hidden="true" />}
       </button>
-
-      <CategoryFilter value={category} onChange={setCategory} disabled={!userPosition} />
-      <RadiusFilter value={radiusKm} onChange={setRadiusKm} disabled={!userPosition} locating={locating} />
     </main>
   );
 }

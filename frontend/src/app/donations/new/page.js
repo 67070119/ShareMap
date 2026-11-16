@@ -54,13 +54,13 @@ export default function NewDonationPage() {
   }
 
   if (loading || !user) {
-    return <main className="page createPointPage"><div className="centerState">กำลังตรวจสอบบัญชี...</div></main>;
+    return <main className="page createPointPage donationEditorPage"><div className="centerState">กำลังตรวจสอบบัญชี...</div></main>;
   }
 
   if (partialUpload) {
     return (
-      <main className="page narrow">
-        <div className="pageTitle">
+      <main className="page narrow donationEditorPage donationEditorStatePage">
+        <div className="pageTitle donationEditorHeading">
           <div>
             <span className="eyebrow">บันทึกโพสต์แล้ว</span>
             <h1>อัปโหลดรูปยังไม่สำเร็จ</h1>
@@ -83,9 +83,10 @@ export default function NewDonationPage() {
   }
 
   return (
-    <main className="page createPointPage">
-      <div className="pageTitle">
+    <main className="page createPointPage donationEditorPage">
+      <div className="pageTitle donationEditorHeading">
         <div>
+          <div className="donationEditorBreadcrumb"><Link href="/">แผนที่</Link><span aria-hidden="true">/</span><strong>สร้างของบริจาค</strong></div>
           <span className="eyebrow">สร้างจุดใหม่</span>
           <h1>เพิ่มของบริจาค</h1>
           <p>เลือกตำแหน่ง เพิ่มรูป และรายละเอียดที่จำเป็นก่อนแสดงบนแผนที่</p>

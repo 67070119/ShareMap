@@ -1,0 +1,287 @@
+/* OGTB v2 — Phase 5 donation editor. UI-only; no route/API/validation changes. */
+.donationEditorPage.page {
+  width: 100%; max-width: 1280px; min-height: calc(100dvh - 74px);
+  margin: 0 auto; padding: 31px clamp(18px, 3.4vw, 46px) 72px;
+  background: var(--ui-bg); color: var(--ui-ink);
+}
+.donationEditorHeading.pageTitle {
+  position: relative; align-items: center; padding: 27px clamp(22px, 3.2vw, 36px);
+  margin: 0 0 26px; overflow: hidden;
+  background: linear-gradient(115deg, #172e45 0%, #111f32 60%, #111b2e 100%);
+  border: 1px solid var(--ui-line); border-radius: 23px;
+  box-shadow: var(--ui-shadow-sm);
+}
+.donationEditorHeading.pageTitle::after {
+  content: ''; position: absolute; width: 320px; height: 320px; right: -95px;
+  top: -155px; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle, rgba(56,189,248,.13), transparent 72%);
+}
+.donationEditorHeading .donationEditorBreadcrumb {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 9px; margin-bottom: 16px;
+  color: var(--ui-muted); font-size: 11px; font-weight: 710;
+}
+.donationEditorBreadcrumb a { color: var(--ui-muted); text-decoration: none; }
+.donationEditorBreadcrumb a:hover { color: var(--ui-primary); }
+.donationEditorBreadcrumb strong { color: var(--ui-primary); font-weight: 750; }
+.donationEditorHeading .eyebrow {
+  display: inline-flex; align-items: center; min-height: 28px; padding: 5px 11px;
+  color: var(--ui-primary); background: var(--ui-primary-soft);
+  border: 1px solid rgba(56,189,248,.28); border-radius: 99px;
+  font-size: 11px; font-weight: 800;
+}
+.donationEditorHeading.pageTitle h1 {
+  margin: 13px 0 7px; color: var(--ui-ink); font-size: clamp(28px,3.7vw,39px);
+  font-weight: 800; line-height: 1.25; letter-spacing: -.02em;
+}
+.donationEditorHeading.pageTitle p { margin: 0; font-size: 13px; color: var(--ui-muted); line-height: 1.6; }
+.donationEditorPage > .errorBox { margin: 0 0 21px; background: var(--ui-danger-soft); border-color: var(--ui-danger-line); color: var(--ui-danger); }
+.donationEditorPage .centerState { color: var(--ui-muted); }
+
+.donationComposerForm { display: grid; grid-template-columns: 242px minmax(0, 1fr); align-items: start; gap: 22px; min-width: 0; }
+.donationComposerRail {
+  position: sticky; top: 94px; display: grid; gap: 18px; min-width: 0;
+  padding: 23px 14px 16px; background: #111c2d;
+  border: 1px solid var(--ui-line); border-radius: 19px;
+  box-shadow: var(--ui-shadow-sm);
+}
+.donationComposerRailHead { display: grid; gap: 8px; padding: 0 11px 3px; }
+.donationComposerRailEyebrow { color: var(--ui-primary); font-size: 10px; font-weight: 830; letter-spacing: .15em; }
+.donationComposerRailHead strong { font-size: 16px; font-weight: 800; color: var(--ui-ink); }
+.donationComposerRailHead p { margin: 0; color: var(--ui-muted); font-size: 11px; line-height: 1.6; }
+.donationComposerStepList { display: grid; gap: 5px; }
+.donationComposerStepLink {
+  display: flex; align-items: center; gap: 10px; min-height: 63px; padding: 10px;
+  border: 1px solid transparent; border-radius: 12px; text-decoration: none;
+  color: var(--ui-muted); transition: background .15s,border-color .15s;
+}
+.donationComposerStepLink:hover { background: var(--ui-surface-soft); border-color: var(--ui-line); }
+.donationComposerStepLink:focus-visible { outline-offset: 1px; }
+.donationComposerStepNumber {
+  display: grid; place-items: center; flex: 0 0 34px; width: 34px; height: 34px;
+  color: var(--ui-muted); border: 1px solid var(--ui-line);
+  border-radius: 11px; background: var(--ui-surface-soft);
+  font-size: 11px; font-weight: 830;
+}
+.donationComposerStepNumber.isDone { background: var(--ui-success-soft); border-color: var(--ui-success-line); color: var(--ui-success); }
+.donationComposerStepLabel { display: grid; flex: 1 1 auto; min-width: 0; gap: 4px; }
+.donationComposerStepLabel strong { font-size: 12px; color: var(--ui-ink); font-weight: 760; }
+.donationComposerStepLabel small { color: var(--ui-muted); font-size: 10px; line-height: 1.4; }
+.donationComposerStepIcon { flex: 0 0 auto; color: #58728d; }
+.donationComposerRailTip {
+  display: flex; align-items: flex-start; gap: 9px; padding: 15px 11px 0;
+  border-top: 1px solid var(--ui-line); font-size: 10px; line-height: 1.65; color: var(--ui-muted);
+}
+.donationComposerRailTip svg { flex-shrink: 0; color: var(--ui-primary); }
+.donationComposerSections { min-width: 0; display: grid; gap: 19px; }
+.donationEditorPage .donationComposerCard.card {
+  min-width: 0; margin: 0; padding: clamp(20px,2.5vw,27px);
+  border: 1px solid var(--ui-line); border-radius: 20px;
+  background: var(--ui-surface); box-shadow: var(--ui-shadow-sm);
+  scroll-margin-top: 93px;
+}
+.donationEditorPage .createSectionHeading { gap: 13px; align-items: center; margin-bottom: 21px; }
+.donationEditorPage .createSectionHeading > div { gap: 12px; }
+.donationEditorPage .createSectionHeading h3 { color: var(--ui-ink); font-size: 17px; font-weight: 770; }
+.donationEditorPage .createStep {
+  width: 40px; height: 40px; flex: 0 0 40px;
+  border: 1px solid rgba(56,189,248,.32); border-radius: 12px;
+  background: var(--ui-primary-soft); color: var(--ui-primary);
+  font-size: 12px; font-weight: 820;
+}
+.donationEditorPage .locationState { min-height: 29px; border-color: var(--ui-line); background: var(--ui-surface-soft); color: var(--ui-muted); }
+.donationEditorPage .locationState.isReady { color: var(--ui-success); border-color: var(--ui-success-line); background: var(--ui-success-soft); }
+.donationEditorPage .field { display: grid; gap: 8px; min-width: 0; }
+.donationEditorPage .field label { font-size: 12px; font-weight: 750; color: var(--ui-text); }
+.donationEditorPage .field input,
+.donationEditorPage .field textarea {
+  min-width: 0; min-height: 48px; padding: 12px 14px;
+  border: 1px solid var(--ui-line); border-radius: 12px;
+  background: #202d42; color: var(--ui-ink);
+  font-size: 13px; line-height: 1.45; box-shadow: none;
+}
+.donationEditorPage .field input::placeholder,
+.donationEditorPage .field textarea::placeholder { color: #96a7bd; }
+.donationEditorPage .field textarea { min-height: 120px; resize: vertical; }
+.donationEditorPage .field input:hover:not(:disabled),.donationEditorPage .field textarea:hover:not(:disabled) { border-color: var(--ui-line-strong); }
+.donationEditorPage .field input:focus,.donationEditorPage .field textarea:focus {
+  border-color: var(--ui-primary); background: var(--ui-surface-raised);
+  box-shadow: 0 0 0 3px rgba(56,189,248,.12); outline: none;
+}
+.donationEditorPage .formGrid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 17px; }
+.donationEditorPage .createAddressField { margin-bottom: 17px; }
+.donationEditorPage .locationPreviewMap {
+  margin-bottom: 17px; height: 245px; border: 1px solid var(--ui-line); border-radius: 15px; background: var(--ui-map-bg);
+}
+.donationEditorPage .locationPreviewMap .leaflet-tile,.locationPickerOverlay .leaflet-tile {
+  filter: invert(.90) hue-rotate(172deg) saturate(.79) brightness(.83) contrast(.93);
+}
+.donationEditorPage .locationPreviewBadge {
+  bottom: 13px; left: 13px; min-height: 33px;
+  border-color: var(--ui-line); color: var(--ui-ink); background: var(--ui-surface-glass);
+}
+.donationEditorPage .locationPreviewBadge span { color: var(--ui-success); }
+.donationEditorPage .locationActionGrid { grid-template-columns: 1.4fr 1fr; gap: 10px; }
+.donationEditorPage .locationActionGrid .button {
+  justify-content: center; min-height: 50px; gap: 10px;
+  border: 1px solid var(--ui-line); border-radius: 12px;
+  background: var(--ui-surface-soft); color: var(--ui-ink);
+  font-size: 12px; font-weight: 730; padding: 11px 13px;
+}
+.donationEditorPage .locationActionGrid .locationSelectButton {
+  background: var(--ui-primary-soft); color: var(--ui-primary);
+  border-color: rgba(56,189,248,.4);
+}
+.donationEditorPage .locationActionGrid .button:hover:not(:disabled) {
+  background: var(--ui-surface-raised); border-color: var(--ui-primary);
+}
+.donationEditorPage .locationSelectButton > svg { flex: 0 0 auto; }
+.donationEditorPage .locationAccuracyHint,.donationEditorPage .warningBox {
+  border: 1px solid var(--ui-warning-line); background: var(--ui-warning-soft); color: var(--ui-warning); border-radius: 12px;
+}
+.donationEditorPage .locationErrorBox { color: var(--ui-danger); border-color: var(--ui-danger-line); background: var(--ui-danger-soft); }
+.donationEditorPage .uploadBox.donationUploadBox {
+  position: relative; min-height: 173px; padding: 23px 18px;
+  border: 1.5px dashed #356b8f; border-radius: 16px;
+  background: linear-gradient(140deg,rgba(16,51,74,.78),rgba(26,42,64,.8));
+  transition: background .15s,border-color .15s;
+}
+.donationEditorPage .uploadBox.donationUploadBox:hover,
+.donationEditorPage .uploadBox.donationUploadBox:focus-within {
+  background: #173953; border-color: var(--ui-primary);
+}
+.donationEditorPage .donationUploadBox .uploadSymbol {
+  width: 52px; height: 48px; display: grid; place-items: center; margin: 0 0 5px;
+  border-radius: 14px; background: var(--ui-primary-soft); color: var(--ui-primary);
+}
+.donationEditorPage .donationUploadBox strong { color: var(--ui-ink); font-size: 13px; }
+.donationEditorPage .donationUploadBox small { max-width: 360px; font-size: 11px; line-height: 1.6; color: var(--ui-muted); }
+.donationEditorPage .donationUploadInput {
+  position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden;
+  clip-path: inset(50%); white-space: nowrap;
+}
+.donationEditorPage .donationUploadInput:focus-visible { outline: none; }
+.donationEditorPage .donationImagePreviewGrid { grid-template-columns: repeat(auto-fit,minmax(144px,1fr)); gap: 12px; margin-bottom: 16px; }
+.donationEditorPage .donationImagePreview {
+  border-color: var(--ui-line); background: var(--ui-surface-soft); border-radius: 13px;
+}
+.donationEditorPage .donationImagePreview img { height: 159px; }
+.donationEditorPage .donationImageRemove { background: rgba(25,15,23,.9); border-color: var(--ui-danger-line); color: #ffadbb; }
+.donationEditorPage .donationImageSource { color: var(--ui-text); background: var(--ui-surface-glass); border: 1px solid var(--ui-line); }
+.donationEditorPage .donationImageFull { border-color: var(--ui-success-line); background: var(--ui-success-soft); color: var(--ui-success); }
+.donationEditorPage .uploadSelectionNote,.donationEditorPage .donationDateNote { font-size: 11px; color: var(--ui-muted); }
+.donationEditorPage .createFormActions {
+  display: flex; justify-content: flex-end; gap: 12px; margin: 0; padding: 19px 23px;
+  background: var(--ui-surface); border: 1px solid var(--ui-line);
+  border-radius: 16px;
+}
+.donationEditorPage .createFormActions .button { min-height: 46px; min-width: 125px; border-radius: 12px; font-size: 13px; }
+.donationEditorPage .createFormActions .button:not(.primary) { background: var(--ui-surface-soft); color: var(--ui-text); border-color: var(--ui-line); }
+.donationEditorPage .createFormActions .button.primary {
+  background: var(--ui-primary); color: var(--ui-primary-contrast); border-color: var(--ui-primary);
+}
+.donationEditorStatePage .partialSaveCard { border-color: var(--ui-line); border-radius: 18px; background: var(--ui-surface); }
+.donationEditorStatePage .partialSaveCard .button.primary { background: var(--ui-primary); color: var(--ui-primary-contrast); border-color: var(--ui-primary); }
+
+/* Full-screen picker intentionally retains the existing lat/lon confirmation behavior. */
+.locationPickerOverlay {
+  isolation: isolate; background: var(--ui-map-bg);
+  color: var(--ui-ink); z-index: 3000;
+}
+.locationPickerOverlay .locationPickerTopbar {
+  min-height: 74px; padding-inline: clamp(14px,2.5vw,36px);
+  background: rgba(11,17,32,.97); border-color: var(--ui-line);
+  box-shadow: 0 8px 24px rgba(0,0,0,.28);
+}
+.locationPickerOverlay .locationPickerTopbar strong { color: var(--ui-ink); font-size: 16px; }
+.locationPickerOverlay .locationPickerTopbar > div > span { color: var(--ui-muted); }
+.locationPickerOverlay .locationPickerBack,
+.locationPickerOverlay .locationPickerGps {
+  min-height: 44px; padding: 8px 13px; border: 1px solid var(--ui-line);
+  border-radius: 12px; background: var(--ui-surface-soft);
+  color: var(--ui-text);
+}
+.locationPickerOverlay .locationPickerGps { color: var(--ui-primary); background: var(--ui-primary-soft); border-color: rgba(56,189,248,.26); }
+.locationPickerOverlay .locationPickerMap { background: var(--ui-map-bg); }
+.locationPickerOverlay .locationPickerMap .pickerMap { background: var(--ui-map-bg); }
+.locationPickerOverlay .locationPickerHint {
+  position: absolute; top: 18px; left: 50%; transform: translateX(-50%);
+  z-index: 700; display: flex; align-items: center; gap: 9px;
+  min-height: 41px; max-width: min(100% - 30px,420px);
+  padding: 9px 14px; border: 1px solid var(--ui-line); border-radius: 12px;
+  background: var(--ui-surface-glass); color: var(--ui-ink);
+  font-size: 11px; line-height: 1.5; box-shadow: var(--ui-shadow);
+  white-space: nowrap; pointer-events: none;
+}
+.locationPickerOverlay .locationPickerHint svg { color: var(--ui-primary); flex-shrink: 0; }
+.locationPickerOverlay .locationPickerFooter {
+  display: flex; justify-content: center; align-items: center; gap: 22px;
+  min-height: 87px; padding: 13px max(20px,env(safe-area-inset-right)) max(13px,env(safe-area-inset-bottom));
+  border-color: var(--ui-line); background: rgba(11,17,32,.98);
+  box-shadow: 0 -10px 32px rgba(1,7,17,.35);
+}
+.locationPickerOverlay .locationPickerCoordinates { display: grid; gap: 5px; min-width: 200px; }
+.locationPickerOverlay .locationPickerCoordinates span { font-size: 10px; color: var(--ui-muted); }
+.locationPickerOverlay .locationPickerCoordinates strong { color: var(--ui-text); font-size: 12px; font-variant-numeric: tabular-nums; }
+.locationPickerOverlay .locationPickerFooter .button.primary {
+  width: min(340px,100%); min-height: 49px; margin: 0;
+  border-radius: 12px; color: var(--ui-primary-contrast);
+  background: var(--ui-primary); border-color: var(--ui-primary); font-size: 13px;
+}
+.locationPickerOverlay .pickerMap .leaflet-control-zoom { margin-right: 15px; margin-bottom: 20px; }
+.locationPickerOverlay .pickerMap .leaflet-control-zoom a {
+  background: var(--ui-surface) !important; color: var(--ui-ink) !important; border-color: var(--ui-line) !important;
+}
+.locationPickerOverlay .locationAccuracyNotice { color: var(--ui-warning); border-color: var(--ui-warning-line); background: var(--ui-warning-soft); }
+.locationPickerOverlay .mapPickerMarkerFace { border-color: var(--ui-surface); background: var(--ui-primary); }
+.locationPickerOverlay .mapPickerMarkerFace span { border-color: var(--ui-primary-contrast); }
+.locationPickerOverlay .mapPickerMarkerFace span::after { background: var(--ui-primary-contrast); }
+.locationPickerOverlay .mapPickerMarker > i { border-color: var(--ui-surface); }
+
+@media (max-width: 980px) {
+  .donationComposerForm { grid-template-columns: 1fr; gap: 16px; }
+  .donationComposerRail { position: static; padding: 18px; gap: 12px; }
+  .donationComposerRailHead { padding: 0; }
+  .donationComposerRailHead p,.donationComposerRailTip { display: none; }
+  .donationComposerStepList { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 7px; }
+  .donationComposerStepLink { min-height: 77px; padding: 8px 5px; flex-direction: column; justify-content: center; gap: 6px; text-align: center; }
+  .donationComposerStepLink .donationComposerStepLabel { gap: 0; }
+  .donationComposerStepLink .donationComposerStepLabel small,.donationComposerStepLink .donationComposerStepIcon { display: none; }
+}
+@media (max-width: 650px) {
+  .donationEditorPage.page { padding: 15px 14px 55px; min-height: calc(100dvh - 68px); }
+  .donationEditorHeading.pageTitle { padding: 21px 18px; border-radius: 17px; margin-bottom: 14px; }
+  .donationEditorHeading.pageTitle h1 { font-size: 26px; }
+  .donationEditorHeading.pageTitle p { font-size: 12px; }
+  .donationComposerRail { padding: 13px; border-radius: 15px; }
+  .donationComposerRailHead strong { font-size: 14px; }
+  .donationComposerStepLink { min-height: 68px; }
+  .donationComposerStepNumber { height: 29px; width: 29px; flex-basis: 29px; font-size: 10px; }
+  .donationComposerStepLabel strong { font-size: 10px; }
+  .donationEditorPage .donationComposerCard.card { padding: 17px 15px; border-radius: 16px; }
+  .donationEditorPage .createSectionHeading { margin-bottom: 17px; gap: 8px; }
+  .donationEditorPage .createSectionHeading h3 { font-size: 15px; line-height: 1.4; }
+  .donationEditorPage .createStep { width: 34px; height: 34px; flex-basis: 34px; border-radius: 10px; }
+  .donationEditorPage .formGrid { grid-template-columns: 1fr; gap: 14px; }
+  .donationEditorPage .field.full { grid-column: auto; }
+  .donationEditorPage .locationPreviewMap { height: 185px; }
+  .donationEditorPage .locationActionGrid { grid-template-columns: 1fr; }
+  .donationEditorPage .locationActionGrid .button { min-height: 46px; }
+  .donationEditorPage .donationImagePreviewGrid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .donationEditorPage .donationImagePreview img { height: 133px; }
+  .donationEditorPage .createFormActions { display: flex; flex-direction: column-reverse; padding: 15px; gap: 10px; }
+  .donationEditorPage .createFormActions .button { width: 100%; }
+  .locationPickerOverlay .locationPickerTopbar { min-height: 65px; padding-inline: 10px; gap: 9px; }
+  .locationPickerOverlay .locationPickerTopbar strong { font-size: 12px; }
+  .locationPickerOverlay .locationPickerBack,.locationPickerOverlay .locationPickerGps { padding: 8px 9px; font-size: 11px; }
+  .locationPickerOverlay .locationPickerHint { top: 12px; font-size: 10px; }
+  .locationPickerOverlay .locationPickerFooter { display: grid; gap: 10px; padding: 12px 14px max(12px,env(safe-area-inset-bottom)); }
+  .locationPickerOverlay .locationPickerCoordinates { min-width: 0; text-align: center; }
+  .locationPickerOverlay .locationPickerFooter .button.primary { width: 100%; margin: 0; }
+}
+@media (max-width: 350px) {
+  .donationEditorPage.page { padding-inline: 11px; }
+  .donationComposerStepLink { padding: 6px 2px; }
+  .donationComposerStepLabel strong { font-size: 9px; }
+  .donationEditorPage .donationImagePreviewGrid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .locationPickerOverlay .locationPickerHint { font-size: 9px; white-space: normal; }
+}

@@ -5,8 +5,11 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import '../../../navigation-route.css';
+import '../../../navigation-v2.css';
 import { api } from '../../../../lib/api';
 import { canNavigateToDonation } from '../../../../lib/donationAvailability';
+import NavIcon from '../../../../components/common/NavIcon';
+import NavigationStepList from '../../../../components/map/NavigationStepList';
 
 const NavigationMap = dynamic(() => import('../../../../components/map/NavigationMap'), { ssr: false });
 const REROUTE_COOLDOWN_MS = 10000;
@@ -515,14 +518,16 @@ export default function NavigatePage() {
     setRecenterKey((value) => value + 1);
   }
   if (donationLoading) {
-    return <main className="navStandaloneState"><div className="navStateCard">กำลังเปิดโหมดนำทาง...</div></main>;
+    return <main className="navStandaloneState"><div className="navStateCard navLoadingState" role="status"><span className="navStateSymbol"><NavIcon name="map" size={25}/></span><strong>กำลังเปิดโหมดนำทาง...</strong><span className="navStateSubtext">กำลังตรวจสอบข้อมูลจุดบริจาค</span></div></main>;
   }
   if (!donation) {
     return (
       <main className="navStandaloneState">
         <div className="navStateCard">
-          <div className="navStateError">{error || 'ไม่พบจุดบริจาคนี้'}</div>
-          <Link href="/" className="navStateButton">← กลับแผนที่</Link>
+          <span className="navStateSymbol navStateSymbol--error"><NavIcon name="reports" size={25}/></span>
+          <h1 className="navStateTitle">ไม่สามารถเปิดการนำทางได้</h1>
+          <div className="navStateError" role="alert">{error || 'ไม่พบจุดบริจาคนี้'}</div>
+          <Link href="/" className="navStateButton"><NavIcon name="map" size={17}/>กลับแผนที่</Link>
         </div>
       </main>
     );
@@ -552,8 +557,12 @@ export default function NavigatePage() {
           ? 'คำนวณเส้นทางไม่สำเร็จ'
           : 'เตรียมเส้นทาง';
 
+  const journeyPercent = route && activeNavigation && Number.isFinite(route.distanceMeters) && route.distanceMeters > 0
+    ? Math.round(Math.min(1, Math.max(0, 1 - (liveMetrics.distanceMeters ?? route.distanceMeters) / route.distanceMeters)) * 100)
+    : 0;
+
   return (
-    <main className={`navExperience${activeNavigation ? ' navActiveExperience' : ''}`}>
+    <main className={`navExperience navExperienceV2${activeNavigation ? ' navActiveExperience' : ''}`}>
       <section className="navMapStage" aria-label="แผนที่นำทาง">
         <NavigationMap
           from={position}
@@ -567,22 +576,29 @@ export default function NavigatePage() {
         />
 
         {activeNavigation ? (
-          <div className="navActiveTopBar" aria-label="คำแนะนำการนำทาง">
+          <div className="navActiveTopBar" aria-label="คำแนะนำการนำทาง" aria-live="polite">
             <div className={`navManeuverIcon${arrived ? ' arrived' : ''}`} aria-hidden="true">{arrived ? 'ถึง' : maneuverIcon(currentManeuver)}</div>
             <div className="navManeuverCopy">
+              <span className="navManeuverOverline">{arrived ? 'ARRIVED AT DESTINATION' : 'NEXT TURN / คำแนะนำถัดไป'}</span>
               <small>{arrived ? 'จุดหมาย' : maneuverDistance}</small>
               <strong>{rerouting ? 'กำลังปรับเส้นทาง...' : maneuverInstruction}</strong>
             </div>
           </div>
         ) : (
           <div className="navTopBar navTopBarSimple">
-            <Link href={`/donations/${id}`} className="navRoundButton" aria-label="กลับหน้ารายละเอียด">←</Link>
+            <Link href={`/donations/${id}`} className="navRoundButton" aria-label="กลับหน้ารายละเอียด"><NavIcon name="arrow" size={19} className="navBackIcon"/></Link>
             <div className="navDestinationCompact">
-              <span>จุดหมาย</span>
+              <span><NavIcon name="map" size={13}/> DESTINATION / จุดหมาย</span>
               <strong>{donation.address || donation.title}</strong>
             </div>
+            <span className="navHeaderTag"><span/>OGTB NAVIGATION</span>
           </div>
         )}
+        <div className="navMapStatusBar" aria-live="polite">
+          <span className={`navMapStatusDot${tracking ? ' isTracking' : ''}`}/>
+          <span>{tracking ? 'กำลังติดตาม GPS' : locating ? 'กำลังค้นหาตำแหน่ง' : 'รอข้อมูล GPS'}</span>
+          {accuracy != null && <strong>±{accuracy} ม.</strong>}
+        </div>
         <div className="navMapControls">
           <button
             type="button"
@@ -601,11 +617,11 @@ export default function NavigatePage() {
           aria-label={sheetCollapsed ? 'ขยายแผงข้อมูล' : 'ย่อแผงข้อมูล'}
           aria-expanded={!sheetCollapsed}
           onClick={() => setSheetCollapsed((value) => !value)}
-        ><span className="navSheetHandle" /></button>
+        ><span className="navSheetHandle" /><span className="navSheetHandleText">{sheetCollapsed ? 'ขยาย' : 'รายละเอียดเส้นทาง'}</span></button>
 
         <div className="navSheetHeader navSheetHeaderSimple">
           <div>
-            <span className="navEyebrow">{activeNavigation ? 'กำลังนำทาง' : 'เส้นทาง'}</span>
+            <span className="navEyebrow"><NavIcon name="map" size={14}/>{activeNavigation ? 'LIVE NAVIGATION / กำลังนำทาง' : 'ROUTE OVERVIEW / เส้นทาง'}</span>
             <h1>{activeNavigation ? formatDuration(liveMetrics.durationSeconds) : heading}</h1>
             {!activeNavigation && !route && (
               <p>{statusMessage || (routeError ? 'เส้นทางยังไม่พร้อม กรุณาลองอีกครั้ง' : 'ใช้ตำแหน่งปัจจุบันเพื่อคำนวณเส้นทางไปยังจุดรับของ')}</p>
@@ -614,20 +630,32 @@ export default function NavigatePage() {
           {route && <div className="navDistanceSummary"><strong>{formatDistance(liveMetrics.distanceMeters)}</strong><span>{activeNavigation ? 'เหลือ' : 'ระยะทาง'}</span></div>}
         </div>
 
-        {statusMessage && <div className="navInlineNotice routeErrorNotice" role="status">{statusMessage}</div>}
-        {routeError && !activeNavigation && <div className="navInlineNotice routeErrorNotice" role="status">{routeError}<button type="button" className="navInlineRetry" onClick={retryLocationAndRoute}>ลองอีกครั้ง</button></div>}
+        {statusMessage && <div className="navInlineNotice routeErrorNotice" role="status"><NavIcon name="reports" size={16}/><span>{statusMessage}</span></div>}
+        {routeError && !activeNavigation && <div className="navInlineNotice routeErrorNotice" role="status"><NavIcon name="reports" size={16}/><span>{routeError}</span><button type="button" className="navInlineRetry" onClick={retryLocationAndRoute}>ลองอีกครั้ง</button></div>}
         {activeNavigation && offRoute && !rerouting && !rerouteError && <div className="navInlineNotice navOffRouteNotice" role="status">ออกจากเส้นทาง กำลังปรับเส้นทางใหม่</div>}
-        {rerouteError && <div className="navInlineNotice routeErrorNotice" role="status">{rerouteError}<button type="button" className="navInlineRetry" onClick={retryReroute}>ลองอีกครั้ง</button></div>}
-        {recoveryNotice && <div className="navInlineNotice navRecoveryNotice" role="status">{recoveryNotice}</div>}
+        {rerouteError && <div className="navInlineNotice routeErrorNotice" role="status"><NavIcon name="reports" size={16}/><span>{rerouteError}</span><button type="button" className="navInlineRetry" onClick={retryReroute}>ลองอีกครั้ง</button></div>}
+        {recoveryNotice && <div className="navInlineNotice navRecoveryNotice" role="status"><NavIcon name="check" size={16}/>{recoveryNotice}</div>}
 
         {!sheetCollapsed && position && accuracy != null && (
-          <div className={`navGpsPill ${quality.className}`}><span>GPS {quality.label}{tracking ? ' · กำลังติดตาม' : ''}</span><strong>±{accuracy} ม.</strong></div>
+          <div className={`navGpsPill ${quality.className}`}><span className="navGpsPillLabel"><NavIcon name="map" size={16}/>GPS {quality.label}{tracking ? ' · กำลังติดตาม' : ''}</span><strong>±{accuracy} ม.</strong></div>
+        )}
+
+        {!sheetCollapsed && activeNavigation && route && (
+          <div className="navRouteProgress" aria-label="ความคืบหน้าการเดินทาง">
+            <div className="navRouteProgressHeader"><span>ความคืบหน้า</span><strong>{journeyPercent}%</strong></div>
+            <div className="navRouteProgressTrack"><span style={{ width: `${journeyPercent}%` }}/></div>
+          </div>
+        )}
+
+        {!sheetCollapsed && route?.steps?.length > 0 && (
+          <NavigationStepList steps={route.steps} active={activeNavigation}
+            maneuverText={maneuverText} formatDistance={formatDistance}/>
         )}
 
         <div className="navPrimaryActions navPrimaryActionsSimple">
           {activeNavigation ? (
             tracking ? (
-              <button type="button" className="navStartButton navStopButton" onClick={stopActiveNavigation}>สิ้นสุดการนำทาง</button>
+              <button type="button" className="navStartButton navStopButton" onClick={stopActiveNavigation}><NavIcon name="close" size={17}/>สิ้นสุดการนำทาง</button>
             ) : (
               <>
                 <button type="button" className="navStartButton" onClick={retryGpsTracking} disabled={locating}>
@@ -637,7 +665,7 @@ export default function NavigatePage() {
               </>
             )
           ) : navigable && route && position && tracking ? (
-            <button type="button" className="navStartButton" onClick={startActiveNavigation}>เริ่มนำทาง</button>
+            <button type="button" className="navStartButton" onClick={startActiveNavigation}><NavIcon name="arrow" size={18}/>เริ่มนำทาง</button>
           ) : navigable ? (
             <button type="button" className="navStartButton" onClick={retryLocationAndRoute} disabled={preparing}>
               {locating ? 'กำลังหาตำแหน่ง...' : routeLoading ? 'กำลังคำนวณเส้นทาง...' : routeError ? 'ลองคำนวณเส้นทางอีกครั้ง' : 'ลองตำแหน่งอีกครั้ง'}

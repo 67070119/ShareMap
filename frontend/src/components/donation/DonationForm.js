@@ -6,6 +6,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { assetUrl } from '../../lib/api';
 import { bangkokDateInputValue, todayBangkokDateInputValue } from '../../lib/date';
 import { remainingDonationImageSlots, selectDonationUploadFiles } from '../../lib/donationImages';
+import DonationFormSteps from './DonationFormSteps';
+import NavIcon from '../common/NavIcon';
 
 const MapPicker = dynamic(() => import('../map/MapPicker'), { ssr: false });
 const DEFAULT_CENTER = { latitude: 13.7291, longitude: 100.7789 };
@@ -43,6 +45,9 @@ export default function DonationForm({
   const [files, setFiles] = useState([]);
   const [previewUrls, setPreviewUrls] = useState([]);
   const previewUrlsRef = useRef([]);
+  const mapLaunchRef = useRef(null);
+  const mapBackRef = useRef(null);
+  const mapDialogRef = useRef(null);
 
   const existingImages = Array.isArray(donation?.images) ? donation.images : [];
   const remainingImageSlots = remainingDonationImageSlots(donation);
@@ -55,6 +60,40 @@ export default function DonationForm({
   useEffect(() => () => {
     previewUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
   }, []);
+
+  useEffect(() => {
+    if (!mapOpen) return undefined;
+    const previousOverflow = document.body.style.overflow;
+    const previouslyFocused = document.activeElement;
+    document.body.style.overflow = 'hidden';
+    mapBackRef.current?.focus();
+    function onKeyDown(event) {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        setMapOpen(false);
+      } else if (event.key === 'Tab') {
+        const focusables = Array.from(mapDialogRef.current?.querySelectorAll(
+          'button:not(:disabled),a[href],input:not(:disabled),[tabindex]:not([tabindex="-1"])',
+        ) || []);
+        if (!focusables.length) return;
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
+    }
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      document.body.style.overflow = previousOverflow;
+      if (previouslyFocused instanceof HTMLElement) previouslyFocused.focus();
+    };
+  }, [mapOpen]);
 
   function field(name, value) {
     setForm((current) => ({ ...current, [name]: value }));
@@ -157,11 +196,14 @@ export default function DonationForm({
   }
   return (
     <>
-      <form onSubmit={submit}>
-        <section className="card createLocationCard">
+      <form className="donationComposerForm" onSubmit={submit} aria-label="แบบฟอร์มข้อมูลของบริจาค">
+        <DonationFormSteps hasLocation={hasLocation} imageCount={existingImages.length + files.length}
+          title={form.title} category={form.category} startDate={form.startDate} endDate={form.endDate} />
+        <div className="donationComposerSections">
+        <section className="card createLocationCard donationComposerCard" id="donation-location">
           <div className="createSectionHeading">
             <div>
-              <span className="createStep">1</span>
+              <span className="createStep">01</span>
               <h3>จุดรับของบริจาค</h3>
             </div>
             <span className={`locationState ${hasLocation ? 'isReady' : ''}`}>
@@ -170,8 +212,9 @@ export default function DonationForm({
           </div>
 
           <div className="field createAddressField">
-            <label>ชื่อสถานที่ / รายละเอียดจุดรับ</label>
+            <label htmlFor="donation-address">ชื่อสถานที่ / รายละเอียดจุดรับ</label>
             <input
+              id="donation-address"
               maxLength={500}
               value={form.address}
               onChange={(event) => field('address', event.target.value)}
@@ -191,8 +234,8 @@ export default function DonationForm({
           )}
 
           <div className="locationActionGrid">
-            <button type="button" className="button locationSelectButton" onClick={openMap}>
-              <span aria-hidden="true">⌖</span>
+            <button type="button" className="button locationSelectButton" ref={mapLaunchRef} onClick={openMap}>
+              <NavIcon name="map" size={19} />
               {hasLocation ? 'เปลี่ยนตำแหน่งบนแผนที่' : 'เลือกตำแหน่งบนแผนที่'}
             </button>
             <button type="button" className="button soft" onClick={useCurrentLocation} disabled={locating}>
@@ -204,12 +247,12 @@ export default function DonationForm({
               GPS ±{locationAccuracy} ม. · ตำแหน่งที่ยืนยันอาจคลาดเคลื่อน สามารถเลือกจุดบนแผนที่เองได้
             </div>
           )}
-          {locationError && <div className="errorBox locationErrorBox">{locationError}</div>}
+          {locationError && <div className="errorBox locationErrorBox" role="alert">{locationError}</div>}
         </section>
 
-        <section className="card">
+        <section className="card donationComposerCard" id="donation-images">
           <div className="createSectionHeading">
-            <div><span className="createStep">2</span><h3>รูปของบริจาค</h3></div>
+            <div><span className="createStep">02</span><h3>รูปของบริจาค</h3></div>
             <span className="locationState">{existingImages.length + files.length} / 5 รูป</span>
           </div>
           {(existingImages.length > 0 || previewUrls.length > 0) && (
@@ -236,16 +279,19 @@ export default function DonationForm({
           {availableImageSlots > 0 && (
             <label className="uploadBox uploadBoxClean donationUploadBox">
               <div>
-                <span className="uploadSymbol" aria-hidden="true">IMG</span>
+                <span className="uploadSymbol" aria-hidden="true"><NavIcon name="gift" size={24} /></span>
                 <strong>{files.length ? 'เพิ่มรูปภาพ' : 'เลือกรูปภาพ'}</strong>
                 <small>JPEG, PNG หรือ WebP · สูงสุด 5 MB ต่อรูป · เลือกเพิ่มได้อีก {availableImageSlots} รูป</small>
               </div>
               <input
-                hidden
+                className="donationUploadInput"
                 type="file"
                 multiple
                 accept="image/jpeg,image/png,image/webp"
-                onChange={(event) => selectFiles(event.target.files)}
+                onChange={(event) => {
+                  selectFiles(event.target.files);
+                  event.target.value = '';
+                }}
               />
             </label>
           )}
@@ -253,42 +299,42 @@ export default function DonationForm({
           {files.length > 0 && <p className="uploadSelectionNote">เลือกเพิ่มใหม่ {files.length} รูป · เหลือพื้นที่ {availableImageSlots} รูป</p>}
         </section>
 
-        <section className="card">
+        <section className="card donationComposerCard" id="donation-details">
           <div className="createSectionHeading">
-            <div><span className="createStep">3</span><h3>รายละเอียดของบริจาค</h3></div>
+            <div><span className="createStep">03</span><h3>รายละเอียดของบริจาค</h3></div>
           </div>
           <div className="formGrid">
             <div className="field full">
-              <label>ชื่อสิ่งของ *</label>
-              <input required maxLength={120} value={form.title} onChange={(event) => field('title', event.target.value)} placeholder="เช่น เสื้อผ้าสภาพดี" />
+              <label htmlFor="donation-title">ชื่อสิ่งของ *</label>
+              <input id="donation-title" required maxLength={120} value={form.title} onChange={(event) => field('title', event.target.value)} placeholder="เช่น เสื้อผ้าสภาพดี" />
             </div>
             <div className="field">
-              <label>ประเภท *</label>
-              <input required maxLength={60} value={form.category} onChange={(event) => field('category', event.target.value)} placeholder="เช่น เสื้อผ้า" />
+              <label htmlFor="donation-category">ประเภท *</label>
+              <input id="donation-category" required maxLength={60} value={form.category} onChange={(event) => field('category', event.target.value)} placeholder="เช่น เสื้อผ้า" />
             </div>
             <div className="field">
-              <label>จำนวน *</label>
-              <input required type="number" min="1" step="1" value={form.quantity} onChange={(event) => field('quantity', event.target.value)} />
+              <label htmlFor="donation-quantity">จำนวน *</label>
+              <input id="donation-quantity" required type="number" min="1" step="1" value={form.quantity} onChange={(event) => field('quantity', event.target.value)} />
             </div>
             <div className="field full">
-              <label>รายละเอียด</label>
-              <textarea rows="4" maxLength={2000} value={form.description} onChange={(event) => field('description', event.target.value)} placeholder="สภาพของ รายละเอียดการรับ หรือข้อมูลเพิ่มเติม" />
+              <label htmlFor="donation-description">รายละเอียด</label>
+              <textarea id="donation-description" rows="4" maxLength={2000} value={form.description} onChange={(event) => field('description', event.target.value)} placeholder="สภาพของ รายละเอียดการรับ หรือข้อมูลเพิ่มเติม" />
             </div>
           </div>
         </section>
 
-        <section className="card">
+        <section className="card donationComposerCard" id="donation-dates">
           <div className="createSectionHeading">
-            <div><span className="createStep">4</span><h3>ช่วงเวลาที่เปิดบริจาค</h3></div>
+            <div><span className="createStep">04</span><h3>ช่วงเวลาที่เปิดบริจาค</h3></div>
           </div>
           <div className="formGrid">
             <div className="field">
-              <label>วันที่เริ่มบริจาค *</label>
-              <input required type="date" value={form.startDate} onChange={(event) => field('startDate', event.target.value)} />
+              <label htmlFor="donation-start-date">วันที่เริ่มบริจาค *</label>
+              <input id="donation-start-date" required type="date" value={form.startDate} onChange={(event) => field('startDate', event.target.value)} />
             </div>
             <div className="field">
-              <label>วันที่สิ้นสุด *</label>
-              <input required type="date" min={form.startDate} value={form.endDate} onChange={(event) => field('endDate', event.target.value)} />
+              <label htmlFor="donation-end-date">วันที่สิ้นสุด *</label>
+              <input id="donation-end-date" required type="date" min={form.startDate} value={form.endDate} onChange={(event) => field('endDate', event.target.value)} />
             </div>
           </div>
           <p className="donationDateNote">วันที่อ้างอิงเวลาประเทศไทย (Asia/Bangkok)</p>
@@ -298,18 +344,20 @@ export default function DonationForm({
           <Link className="button" href={cancelHref}>ยกเลิก</Link>
           <button className="button primary" disabled={submitting}>{submitting ? 'กำลังบันทึก...' : submitLabel}</button>
         </div>
+        </div>
       </form>
 
       {mapOpen && (
-        <div className="locationPickerOverlay" role="dialog" aria-modal="true" aria-label="เลือกตำแหน่งจุดรับของ">
+        <div ref={mapDialogRef} className="locationPickerOverlay" role="dialog" aria-modal="true" aria-label="เลือกตำแหน่งจุดรับของ">
           <div className="locationPickerTopbar">
-            <button type="button" className="locationPickerBack" onClick={() => setMapOpen(false)} aria-label="กลับไปหน้าฟอร์ม">
+            <button type="button" className="locationPickerBack" ref={mapBackRef} onClick={() => setMapOpen(false)} aria-label="กลับไปหน้าฟอร์ม">
               <span aria-hidden="true">←</span><span>กลับ</span>
             </button>
             <div><strong>เลือกตำแหน่งจุดรับของ</strong><span>แตะบนแผนที่เพื่อวางหมุด</span></div>
             <button type="button" className="locationPickerGps" onClick={useCurrentLocation} disabled={locating}>{locating ? 'กำลังหา...' : 'ตำแหน่งฉัน'}</button>
           </div>
           <div className="locationPickerMap">
+            <div className="locationPickerHint" role="status"><NavIcon name="map" size={16}/> แตะบนแผนที่เพื่อกำหนดจุดรับของบริจาค</div>
             {draftAccuracy != null && draftAccuracy > 60 && (
               <div className="locationAccuracyNotice" role="status">
                 GPS ±{draftAccuracy} ม. · ตำแหน่งอาจคลาดเคลื่อน ลองกดตำแหน่งฉันอีกครั้งหรือแตะเลือกจุดเอง
@@ -318,6 +366,10 @@ export default function DonationForm({
             <MapPicker value={draftPosition} onChange={updateDraftPosition} />
           </div>
           <div className="locationPickerFooter">
+            <div className="locationPickerCoordinates" aria-live="polite">
+              <span>ตำแหน่งที่เลือก</span>
+              <strong>{Number(draftPosition.latitude).toFixed(5)}, {Number(draftPosition.longitude).toFixed(5)}</strong>
+            </div>
             <button type="button" className="button primary" onClick={confirmPosition}>ยืนยันตำแหน่งนี้</button>
           </div>
         </div>

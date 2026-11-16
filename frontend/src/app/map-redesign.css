@@ -1,0 +1,265 @@
+/* Phase 3 — Map discovery experience.
+ * Geometry overrides legacy map-ux.css without changing API or routing contracts. */
+.mapExperience.mapShell {
+  position: relative; width: 100%; height: 100dvh; min-height: 500px;
+  overflow: hidden; isolation: isolate; background: var(--ui-map-bg);
+}
+.mapExperience .mapStage { position: absolute; inset: 0; z-index: 0; }
+.mapExperience .mapStage .mapCanvas { width: 100%; height: 100%; }
+.mapExperience .pawMapCanvas .leaflet-tile {
+  filter: invert(.90) hue-rotate(172deg) saturate(.79) brightness(.83) contrast(.93);
+}
+.mapExperience .leaflet-container { background: #142334; font-family: inherit; }
+.mapExperience .leaflet-control-zoom {
+  border: 1px solid var(--ui-line) !important; border-radius: 13px !important;
+  box-shadow: var(--ui-shadow) !important;
+  overflow: hidden; margin-right: 22px; margin-bottom: 24px;
+}
+.mapExperience .leaflet-control-zoom a { background: var(--ui-surface) !important; color: var(--ui-ink) !important; }
+.mapExperience .leaflet-control-attribution a { color: var(--ui-primary); }
+.mapExperience .mapAnimalEmoji {
+  border-color: var(--ui-surface);
+  background: linear-gradient(145deg, #34c4f5, #168fcb);
+  box-shadow: 0 8px 25px rgba(2,9,19,.42);
+}
+.mapExperience .mapAnimalMarker > b { background: #168fcb; border-color: var(--ui-surface); }
+.mapExperience .mapAnimalMarker.isSelected .mapAnimalEmoji {
+  box-shadow: 0 0 0 4px var(--ui-surface), 0 0 0 7px rgba(56,189,248,.45), 0 11px 27px rgba(2,9,19,.56);
+}
+.mapExperience .mapUserMarkerPulse { background: rgba(56,189,248,.2); }
+.mapExperience .mapUserMarkerDot { border-color: var(--ui-surface); }
+
+/* Desktop floating results panel */
+.mapExperience .mapResultsSheet {
+  position: absolute; z-index: 710; top: 112px; bottom: 20px; left: 22px;
+  display: flex; flex-direction: column;
+  width: min(394px, calc(100% - 110px)); min-height: 0;
+  overflow: hidden; background: rgba(16,25,41,.97);
+  border: 1px solid var(--ui-line); border-radius: 24px;
+  box-shadow: 0 22px 65px rgba(2,9,19,.5); backdrop-filter: blur(22px);
+}
+.mapExperience .mapSheetToggle { display: none; }
+.mapExperience .mapSheetContent { display: flex; flex-direction: column; min-height: 0; height: 100%; overflow: hidden; }
+.mapExperience .mapPanelHead { flex: 0 0 auto; padding: 23px 23px 15px; }
+.mapExperience .mapPanelEyebrow { display: flex; align-items: center; gap: 8px; color: var(--ui-primary); font-size: 10px; font-weight: 850; letter-spacing: .17em; }
+.mapExperience .mapPanelEyebrowDot { height: 7px; width: 7px; border-radius: 50%; background: var(--ui-primary); box-shadow: 0 0 0 4px rgba(56,189,248,.11); }
+.mapExperience .mapPanelHead h1 {
+  margin: 13px 0 8px; color: var(--ui-ink); font-size: clamp(24px, 2.3vw, 29px);
+  letter-spacing: -.03em; line-height: 1.25; font-weight: 800;
+}
+.mapExperience .mapPanelHead p { margin: 0; max-width: 310px; color: var(--ui-muted); line-height: 1.6; font-size: 12px; }
+.mapExperience .mapPanelFilters {
+  flex: 0 0 auto; display: grid; gap: 12px; padding: 16px 20px 18px;
+  border-top: 1px solid var(--ui-line); border-bottom: 1px solid var(--ui-line);
+  background: rgba(32,45,66,.24);
+}
+.mapExperience .mapPanelSectionHeading { display: flex; align-items: center; justify-content: space-between; gap: 10px; color: var(--ui-text); font-size: 12px; font-weight: 760; }
+.mapExperience .mapPanelSectionHeading svg { color: var(--ui-primary); }
+.mapExperience .mapResultsSheet .mapCategoryFilter {
+  position: relative; z-index: auto; bottom: auto; left: auto;
+  transform: none; width: 100%; min-height: 46px; padding: 6px 10px;
+  display: grid; grid-template-columns: auto minmax(0,1fr) auto;
+  background: var(--ui-surface-soft); border: 1px solid var(--ui-line);
+  border-radius: 12px; box-shadow: none; backdrop-filter: none;
+}
+.mapExperience .mapResultsSheet .mapCategoryFilter:focus-within { border-color: var(--ui-primary); box-shadow: 0 0 0 3px rgba(56,189,248,.1); }
+.mapExperience .mapResultsSheet .mapCategoryFilter input { background: transparent; border: 0; color: var(--ui-ink); font-size: 13px; min-height: 32px; padding: 3px 0; }
+.mapExperience .mapResultsSheet .mapCategoryFilterLabel { font-size: 11px; }
+.mapExperience .mapResultsSheet .mapCategoryClear { background: var(--ui-surface-raised); color: var(--ui-text); }
+.mapExperience .mapResultsSheet .radiusFilter {
+  position: relative; z-index: auto; bottom: auto; left: auto;
+  transform: none; width: 100%; padding: 14px 13px 11px; margin: 0;
+  background: var(--ui-surface-soft); border: 1px solid var(--ui-line);
+  border-radius: 14px; box-shadow: none; backdrop-filter: none;
+}
+.mapExperience .mapResultsSheet .radiusFilter.isDragging { transform: none; border-color: var(--ui-primary); box-shadow: 0 0 0 3px rgba(56,189,248,.11); }
+.mapExperience .mapResultsSheet .radiusFilterHeader strong { font-size: 12px; color: var(--ui-ink); }
+.mapExperience .mapResultsSheet .radiusFilterHeader span { font-size: 10px; color: var(--ui-muted); }
+.mapExperience .mapResultsSheet .radiusFilterValue {
+  background: var(--ui-primary-soft); color: var(--ui-primary);
+  border-color: rgba(56,189,248,.3); font-size: 12px;
+}
+.mapExperience .mapResultsSheet .radiusFilter.isDragging .radiusFilterValue { background: var(--ui-primary-soft); border-color: var(--ui-primary); }
+.mapExperience .mapResultsSheet .radiusSlider::-webkit-slider-runnable-track {
+  background: linear-gradient(90deg,var(--ui-primary) 0 var(--radius-progress),var(--ui-line-strong) var(--radius-progress) 100%);
+}
+.mapExperience .mapResultsSheet .radiusSlider::-moz-range-track { background: var(--ui-line-strong); }
+.mapExperience .mapResultsSheet .radiusSlider::-webkit-slider-thumb { border-color: var(--ui-surface-soft); }
+.mapExperience .mapResultsSheet .radiusSliderLabels { font-size: 10px; color: var(--ui-muted); }
+
+.mapExperience .mapPanelResultHeading {
+  flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 15px 20px 11px;
+}
+.mapExperience .mapPanelResultHeading > div { display: grid; gap: 3px; min-width: 0; }
+.mapExperience .mapPanelResultHeading strong { color: var(--ui-ink); font-size: 13px; }
+.mapExperience .mapPanelResultHeading span { color: var(--ui-muted); font-size: 11px; }
+.mapExperience .mapPanelResultHeading output {
+  display: grid; place-items: center; min-width: 32px; min-height: 28px; padding: 4px 8px;
+  color: var(--ui-primary); background: var(--ui-primary-soft);
+  border: 1px solid rgba(56,189,248,.23); border-radius: 9px; font-size: 12px; font-weight: 800;
+}
+.mapExperience .mapPanelResults {
+  flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+  display: flex; flex-direction: column; gap: 10px; padding: 4px 14px 16px 20px;
+  scrollbar-width: thin; scrollbar-color: var(--ui-line-strong) transparent;
+}
+.mapExperience .mapPanelFoot {
+  flex: 0 0 auto; display: flex; align-items: center; gap: 8px;
+  padding: 12px 20px; color: var(--ui-muted); border-top: 1px solid var(--ui-line);
+  font-size: 10px; background: rgba(11,17,32,.45);
+}
+.mapExperience .mapPanelFoot svg { color: var(--ui-primary); }
+.mapExperience .mapPanelEmpty {
+  display: grid; justify-items: center; align-content: center; gap: 10px;
+  min-height: 194px; padding: 20px 14px;
+  background: rgba(32,45,66,.44); border: 1px dashed var(--ui-line);
+  border-radius: 17px; color: var(--ui-muted); text-align: center;
+}
+.mapExperience .mapPanelStateIcon { display: grid; place-items: center; width: 45px; height: 45px; border-radius: 14px; color: var(--ui-primary); background: var(--ui-primary-soft); }
+.mapExperience .mapPanelEmpty strong { color: var(--ui-ink); font-size: 13px; }
+.mapExperience .mapPanelEmpty p { margin: 0; color: var(--ui-muted); line-height: 1.6; font-size: 11px; max-width: 285px; }
+.mapExperience .mapPanelEmptyError { border-color: var(--ui-danger-line); }
+.mapExperience .mapPanelEmptyError .mapPanelStateIcon { color: var(--ui-danger); background: var(--ui-danger-soft); }
+.mapExperience .mapPanelRetry { min-height: 39px; margin-top: 5px; padding: 8px 12px; border: 1px solid rgba(56,189,248,.3); border-radius: 10px; background: var(--ui-primary-soft); color: var(--ui-primary); font: inherit; font-size: 12px; font-weight: 760; cursor: pointer; }
+.mapExperience .mapPanelRetry:hover { background: var(--ui-surface-raised); }
+
+/* Donation previews */
+.mapExperience .mapResultCard {
+  flex: 0 0 auto; border: 1px solid var(--ui-line); border-radius: 15px;
+  background: var(--ui-surface); overflow: hidden; transition: background .15s, border-color .15s;
+}
+.mapExperience .mapResultCard:hover { background: var(--ui-surface-soft); border-color: var(--ui-line-strong); }
+.mapExperience .mapResultCard.isSelected { border-color: var(--ui-primary); background: var(--ui-primary-soft); }
+.mapExperience .mapResultSelect {
+  display: grid; grid-template-columns: 67px minmax(0,1fr) 22px;
+  gap: 11px; align-items: center; width: 100%; padding: 11px 12px;
+  color: var(--ui-ink); border: 0; background: transparent; font: inherit; text-align: left; cursor: pointer;
+}
+.mapExperience .mapResultThumbnail {
+  display: grid; place-items: center; height: 67px; width: 67px;
+  overflow: hidden; border-radius: 12px; color: var(--ui-primary); background: var(--ui-surface-soft);
+  border: 1px solid var(--ui-line);
+}
+.mapExperience .mapResultThumbnail img { display: block; height: 100%; width: 100%; object-fit: cover; }
+.mapExperience .mapResultInfo { display: grid; gap: 5px; min-width: 0; }
+.mapExperience .mapResultCategory { color: var(--ui-primary); font-size: 10px; font-weight: 700; overflow-wrap: anywhere; }
+.mapExperience .mapResultTitle {
+  color: var(--ui-ink); font-size: 13px; font-weight: 760; line-height: 1.35;
+  overflow-wrap: anywhere; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden;
+}
+.mapExperience .mapResultMeta { display: flex; gap: 6px; align-items: center; color: var(--ui-muted); font-size: 11px; }
+.mapExperience .mapResultMarker { align-self: start; color: var(--ui-muted); padding-top: 4px; }
+.mapExperience .mapResultDetail {
+  display: flex; gap: 7px; align-items: center; justify-content: flex-end;
+  min-height: 35px; padding: 7px 12px; border-top: 1px solid var(--ui-line);
+  color: var(--ui-primary); font-size: 11px; font-weight: 750; text-decoration: none;
+}
+.mapExperience .mapResultDetail:hover { color: var(--ui-primary-hover); background: rgba(56,189,248,.07); }
+
+/* Skeleton state */
+.mapExperience .mapPanelSkeletons { display: grid; gap: 10px; }
+.mapExperience .mapPanelSkeleton { display: flex; gap: 11px; padding: 12px; border: 1px solid var(--ui-line); border-radius: 14px; background: var(--ui-surface); }
+.mapExperience .mapPanelSkeleton > span { width: 67px; height: 67px; flex: 0 0 67px; border-radius: 12px; background: var(--ui-surface-soft); }
+.mapExperience .mapPanelSkeleton > div { flex: 1; display: grid; align-content: center; gap: 10px; }
+.mapExperience .mapPanelSkeleton i { display: block; width: 75%; height: 10px; border-radius: 6px; background: var(--ui-surface-soft); }
+.mapExperience .mapPanelSkeleton i:first-child { width: 40%; }
+.mapExperience .mapPanelSkeleton i:last-child { width: 55%; }
+
+/* Map overlay controls: stay in map's uncovered area */
+.mapExperience .mapSummary {
+  left: auto; right: 22px; top: 111px; transform: none; z-index: 620;
+  padding: 10px 13px; border: 1px solid var(--ui-line); border-radius: 13px;
+  background: var(--ui-surface-glass); color: var(--ui-muted); box-shadow: var(--ui-shadow);
+}
+.mapExperience .mapSummary span:last-child { display: inline; }
+.mapExperience .mapSummary strong { color: var(--ui-ink); }
+.mapExperience .mapLocateButton {
+  right: 22px; top: 166px; width: 46px; height: 46px; z-index: 620;
+  border: 1px solid var(--ui-line); border-radius: 14px; background: var(--ui-surface-glass);
+}
+.mapExperience .mapLocateGlyph { box-shadow: inset 0 0 0 5px var(--ui-surface); }
+.mapExperience .mapStatus {
+  left: auto; right: 20px; top: 229px; transform: none; z-index: 620;
+  max-width: min(365px,calc(100% - 460px));
+  color: var(--ui-text); border: 1px solid var(--ui-line); background: var(--ui-surface-glass);
+  border-radius: 12px; font-size: 12px;
+}
+.mapExperience .mapStatusError { color: var(--ui-danger); background: var(--ui-danger-soft); border-color: var(--ui-danger-line); }
+.mapExperience .mapAccuracyNotice {
+  left: auto; right: 20px; top: 281px; z-index: 620;
+  max-width: min(340px,calc(100% - 460px)); background: var(--ui-warning-soft);
+  color: var(--ui-warning); border: 1px solid var(--ui-warning-line); font-size: 11px;
+}
+.mapExperience .pawPopup .leaflet-popup-content-wrapper { background: var(--ui-surface); color: var(--ui-ink); border-color: var(--ui-line); box-shadow: var(--ui-shadow); }
+.mapExperience .popupAnimalIcon { background: var(--ui-primary-soft); }
+
+/* Collapsible bottom discovery sheet on phones and tablets. */
+@media (max-width: 900px) {
+  .mapExperience .mapResultsSheet {
+    top: auto; bottom: 0; left: 0; right: 0;
+    width: 100%; height: 105px; max-height: calc(100dvh - 100px);
+    border-radius: 24px 24px 0 0; border-left: 0; border-right: 0; border-bottom: 0;
+    background: rgba(16,25,41,.98); box-shadow: 0 -12px 42px rgba(1,7,16,.5);
+    transition: height .22s ease;
+  }
+  .mapExperience .mapResultsSheet.isExpanded { height: min(76dvh,680px); }
+  .mapExperience .mapSheetToggle {
+    flex: 0 0 auto; display: flex; position: relative; width: 100%; min-height: 105px;
+    gap: 12px; align-items: center; padding: 26px 19px 14px;
+    color: var(--ui-ink); background: transparent; border: 0; text-align: left; font: inherit;
+    cursor: pointer;
+  }
+  .mapExperience .mapSheetHandle {
+    position: absolute; top: 11px; left: calc(50% - 22px);
+    width: 44px; height: 5px; border-radius: 10px; background: var(--ui-line-strong);
+  }
+  .mapExperience .mapSheetToggleTitle { display: grid; gap: 4px; flex: 1; }
+  .mapExperience .mapSheetToggleTitle strong { color: var(--ui-ink); font-size: 16px; }
+  .mapExperience .mapSheetToggleTitle small { color: var(--ui-muted); font-size: 11px; }
+  .mapExperience .mapSheetToggleArrow {
+    display: grid; place-items: center; color: var(--ui-primary);
+    width: 36px; height: 36px; border-radius: 11px; background: var(--ui-primary-soft);
+    transform: rotate(-90deg); transition: transform .2s;
+  }
+  .mapExperience .mapResultsSheet.isExpanded .mapSheetToggleArrow { transform: rotate(90deg); }
+  .mapExperience .mapSheetContent { display: none; }
+  .mapExperience .mapResultsSheet.isExpanded .mapSheetContent { display: flex; flex: 1 1 auto; height: auto; min-height: 0; }
+  .mapExperience .mapPanelHead { padding: 0 19px 13px; }
+  .mapExperience .mapPanelHead h1 { font-size: 21px; margin: 7px 0 3px; }
+  .mapExperience .mapPanelHead p { font-size: 11px; max-width: none; }
+  .mapExperience .mapPanelFilters { padding: 11px 17px 13px; gap: 9px; }
+  .mapExperience .mapPanelResultHeading { padding: 13px 17px 10px; }
+  .mapExperience .mapPanelResults { padding: 4px 12px 14px 17px; }
+  .mapExperience .mapPanelFoot { padding: 10px 17px; }
+  .mapExperience .mapSummary {
+    left: 13px; right: auto; top: 84px; padding: 9px 11px; font-size: 10px;
+  }
+  .mapExperience .mapSummary span:last-child { display: inline; }
+  .mapExperience .mapLocateButton {
+    top: 84px; right: 13px; width: 44px; height: 44px;
+  }
+  .mapExperience .mapStatus {
+    top: 143px; left: 13px; right: 13px;
+    width: auto; max-width: none; font-size: 11px; transform: none;
+  }
+  .mapExperience .mapAccuracyNotice {
+    top: 197px; right: 13px; left: 13px; max-width: none;
+  }
+  .mapExperience .leaflet-control-zoom { margin-right: 13px; margin-bottom: 130px; }
+}
+@media (max-width: 550px) {
+  .mapExperience .mapResultsSheet.isExpanded { height: min(80dvh,660px); }
+  .mapExperience .mapSummary { top: 82px; }
+  .mapExperience .mapLocateButton { top: 82px; }
+  .mapExperience .mapStatus { top: 135px; }
+  .mapExperience .mapAccuracyNotice { top: 188px; }
+  .mapExperience .mapPanelHead p { display: none; }
+  .mapExperience .mapPanelFilters { gap: 8px; }
+  .mapExperience .mapResultsSheet .radiusFilter { padding: 10px 11px 8px; }
+  .mapExperience .mapSheetToggle { padding-left: 16px; padding-right: 16px; }
+  .mapExperience .leaflet-control-zoom { margin-bottom: 130px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mapExperience .mapResultsSheet { transition: none; }
+}

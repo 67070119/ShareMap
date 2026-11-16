@@ -6,7 +6,14 @@ import './map-ux.css';
 import './auth-form-ux.css';
 import './detail-navigation-ux.css';
 import './admin-ux.css';
-import SiteHeader from '../components/common/SiteHeader';
+import './design-system-dark.css';
+import './app-shell.css';
+import './map-redesign.css';
+import './auth-redesign.css';
+import './donation-editor.css';
+import './donation-detail-report.css';
+import './admin-redesign.css';
+import AppShell from '../components/common/AppShell';
 import { AuthProvider } from '../lib/useAuth';
 
 export const metadata = {
@@ -18,7 +25,7 @@ export const viewport = {
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
-  themeColor: '#eef2f3',
+  themeColor: '#0b1120',
 };
 
 export default function RootLayout({ children }) {
@@ -26,8 +33,7 @@ export default function RootLayout({ children }) {
     <html lang="th">
       <body>
         <AuthProvider>
-          <SiteHeader />
-          {children}
+          <AppShell>{children}</AppShell>
         </AuthProvider>
       </body>
     </html>

@@ -1,0 +1,405 @@
+/* OGTB Phase 8 — Admin Console Dark Navy redesign. Presentation only.
+ * All mutations and security remain on existing AdminNav / backend APIs.
+ */
+.adminModernShell { background: var(--ui-bg); color: var(--ui-ink); }
+.adminModernShell > .adminModernPage {
+  width: min(100%,1450px); max-width: none;
+  padding: 33px clamp(18px,3vw,46px) 78px;
+  min-width: 0; color: var(--ui-ink);
+}
+.adminModernPage .adminModernHeading.pageTitle {
+  position: relative; display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 19px; overflow: hidden; margin-bottom: 24px;
+  min-height: 166px; padding: clamp(22px,3vw,35px);
+  border: 1px solid #28445b; border-radius: 23px; color: var(--ui-ink);
+  background: radial-gradient(ellipse at 88% 9%, rgba(56,189,248,.15),transparent 42%),
+    linear-gradient(125deg,#182e46,#111d30 74%);
+  box-shadow: var(--ui-shadow-sm);
+}
+.adminModernHeading.pageTitle::after {
+  position: absolute; content: ''; width: 320px; height: 320px;
+  top: -220px; right: -60px; border-radius: 50%;
+  pointer-events: none; border: 1px solid rgba(56,189,248,.13);
+}
+.adminModernHeadingMain { min-width: 0; flex: 1 1 300px; }
+.adminModernHeadingMain .adminModernEyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  color: var(--ui-primary); font-size: 11px; font-weight: 820; letter-spacing: .1em;
+}
+.adminModernHeadingMain h1 {
+  margin: 12px 0 7px; font-size: clamp(27px,2.8vw,39px);
+  color: var(--ui-ink); line-height: 1.2; font-weight: 830;
+  letter-spacing: -.023em; overflow-wrap: anywhere;
+}
+.adminModernHeadingMain p { margin: 0; max-width: 680px; line-height: 1.7; font-size: 13px; color: #acc1d6; }
+.adminModernHeadingAside { display: flex; gap: 11px; flex-wrap: wrap; align-items: center; z-index: 1; }
+.adminModernCount {
+  display: grid; min-width: 90px; gap: 6px; justify-items: center;
+  padding: 12px 16px; border: 1px solid rgba(91,179,225,.25);
+  border-radius: 16px; background: rgba(7,26,44,.66);
+}
+.adminModernCount strong { color: var(--ui-primary); font-size: 26px; font-weight: 830; line-height: 1; font-variant-numeric: tabular-nums; }
+.adminModernCount small { color: #a8c2d6; font-size: 10px; white-space: nowrap; }
+.adminModernHeading .adminBackLink {
+  display: inline-flex; justify-content: center; align-items: center; gap: 9px;
+  min-height: 44px; padding: 9px 13px; border: 1px solid rgba(135,188,218,.28);
+  border-radius: 12px; background: rgba(14,36,55,.85); color: var(--ui-ink);
+  font-size: 12px; text-decoration: none;
+}
+.adminModernHeading .adminBackLink svg { transform: rotate(180deg); }
+.adminModernHeading .adminBackLink:hover { border-color: var(--ui-primary); color: var(--ui-primary); }
+
+.adminModernPage .adminModernPanel.card {
+  margin: 0; min-width: 0; padding: clamp(18px,2.3vw,28px);
+  border: 1px solid var(--ui-line); border-radius: 20px;
+  background: var(--ui-surface); color: var(--ui-ink);
+  box-shadow: var(--ui-shadow-sm);
+}
+.adminModernSectionHeading {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; margin: 0 0 21px;
+}
+.adminSectionEyebrow {
+  display: block; color: var(--ui-primary); margin-bottom: 6px;
+  font-size: 10px; font-weight: 800; letter-spacing: .11em;
+}
+.adminModernSectionHeading h2 { margin: 0; color: var(--ui-ink); font-size: 19px; font-weight: 810; line-height: 1.35; }
+.adminSectionIcon {
+  display: grid; place-items: center; width: 42px; height: 42px;
+  flex: 0 0 42px; color: var(--ui-primary);
+  background: var(--ui-primary-soft); border: 1px solid rgba(56,189,248,.23); border-radius: 13px;
+}
+
+.adminDashboardSection { margin: 0 0 23px; }
+.adminDashboardSection > .adminModernSectionHeading { padding: 0 4px; }
+.adminDashboardKpis { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 14px; }
+.adminKpiCard {
+  display: flex; min-width: 0; flex-direction: column; gap: 15px;
+  min-height: 169px; padding: 18px 18px 15px;
+  text-decoration: none; border: 1px solid var(--ui-line);
+  border-radius: 17px; background: var(--ui-surface);
+  box-shadow: var(--ui-shadow-sm); color: var(--ui-ink);
+  transition: transform .16s, border-color .16s, background-color .16s;
+}
+.adminKpiCard:hover { transform: translateY(-2px); border-color: rgba(56,189,248,.5); background: var(--ui-surface-raised); }
+.adminKpiCardTop,.adminKpiBottom { display: flex; justify-content: space-between; align-items: center; gap: 11px; min-width: 0; }
+.adminKpiCardTop > span:first-child { color: var(--ui-text); font-size: 12px; font-weight: 760; }
+.adminKpiIcon {
+  display: grid; place-items: center; flex: 0 0 39px;
+  width: 39px; height: 39px; border-radius: 13px; color: var(--ui-primary);
+  background: var(--ui-primary-soft);
+}
+.adminKpiCard--blue .adminKpiIcon { color: #93c5fd; background: #1d3557; }
+.adminKpiCard--violet .adminKpiIcon { color: #c4b5fd; background: #31294e; }
+.adminKpiCard--amber .adminKpiIcon { color: var(--ui-warning); background: var(--ui-warning-soft); }
+.adminKpiCard > strong { color: var(--ui-ink); font-size: 33px; line-height: 1; font-weight: 830; font-variant-numeric: tabular-nums; }
+.adminKpiBottom { margin-top: auto; color: var(--ui-primary); }
+.adminKpiBottom small { min-width: 0; font-size: 10px; line-height: 1.5; color: var(--ui-muted); }
+.adminKpiSkeleton .ui-skeleton { width: 60%; height: 34px; margin-top: 12px; }
+.adminKpiSkeleton > span { color: var(--ui-muted); font-size: 12px; }
+.adminDashboardLower { display: grid; grid-template-columns: minmax(0,1.4fr) minmax(250px,.6fr); gap: 18px; align-items: stretch; }
+.adminQuickActionList { display: grid; gap: 9px; }
+.adminQuickAction {
+  display: flex; align-items: center; gap: 13px; min-height: 72px; padding: 13px;
+  border: 1px solid var(--ui-line); border-radius: 13px;
+  background: var(--ui-surface-soft); text-decoration: none; color: var(--ui-ink);
+}
+.adminQuickAction:hover { border-color: var(--ui-primary); background: var(--ui-surface-raised); }
+.adminQuickActionIcon { flex: 0 0 42px; width: 42px; height: 42px; display: grid; place-items: center; color: var(--ui-primary); background: var(--ui-primary-soft); border-radius: 12px; }
+.adminQuickAction > span:nth-child(2) { display: grid; gap: 5px; flex: 1; min-width: 0; }
+.adminQuickAction strong { font-size: 12px; color: var(--ui-ink); }
+.adminQuickAction small { font-size: 11px; line-height: 1.5; color: var(--ui-muted); }
+.adminQuickAction > svg { color: var(--ui-primary); flex-shrink: 0; }
+.adminDashboardFocus {
+  display: flex; flex-direction: column; gap: 13px; min-width: 0; padding: 25px;
+  border: 1px solid #45573d; border-radius: 20px;
+  background: radial-gradient(ellipse at 45% 0, rgba(253,186,116,.13), transparent 60%),var(--ui-surface);
+  box-shadow: var(--ui-shadow-sm);
+}
+.adminDashboardFocusIcon { display: grid; place-items: center; width: 55px; height: 55px; color: var(--ui-warning); background: var(--ui-warning-soft); border-radius: 16px; }
+.adminDashboardFocus > small { color: var(--ui-warning); font-size: 10px; font-weight: 800; letter-spacing: .11em; margin-top: 8px; }
+.adminDashboardFocus > strong { color: var(--ui-ink); font-size: 26px; font-weight: 830; }
+.adminDashboardFocus > p { margin: 0; color: var(--ui-muted); font-size: 12px; line-height: 1.8; }
+.adminDashboardFocus .button {
+  margin-top: auto; min-height: 45px; display: inline-flex; gap: 9px;
+  align-items: center; justify-content: center; border: 1px solid var(--ui-warning-line);
+  border-radius: 12px; color: var(--ui-warning); background: var(--ui-warning-soft);
+  text-decoration: none; font-size: 12px; font-weight: 730;
+}
+
+/* Shared list / toolbar / client side filters */
+.adminModernPanel .adminToolbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 19px;
+  padding: 11px; background: #111a29; border: 1px solid var(--ui-line); border-radius: 14px;
+}
+.adminSearchField {
+  display: flex; align-items: center; gap: 9px; flex: 1 1 205px; min-width: 0;
+  min-height: 44px; padding: 0 12px; border: 1px solid var(--ui-line);
+  border-radius: 11px; background: var(--ui-surface-soft); color: var(--ui-muted);
+}
+.adminSearchField:focus-within { border-color: var(--ui-primary); box-shadow: 0 0 0 3px rgba(56,189,248,.1); }
+.adminSearchField svg { color: var(--ui-primary); flex-shrink: 0; }
+.adminSearchField input {
+  width: 100%; min-width: 0; min-height: 40px; border: 0; outline: 0; box-shadow: none;
+  background: transparent; color: var(--ui-ink); font-size: 12px;
+}
+.adminSearchField input::placeholder { color: var(--ui-muted); }
+.adminFilterSelect { flex: 0 1 auto; }
+.adminFilterSelect select {
+  min-width: 119px; max-width: 205px; min-height: 44px; padding: 10px 27px 10px 11px;
+  border: 1px solid var(--ui-line); border-radius: 11px;
+  background: var(--ui-surface-soft); color: var(--ui-text);
+  font-size: 11px; font-weight: 720; cursor: pointer; color-scheme: dark;
+}
+.adminFilterSelect select:focus { border-color: var(--ui-primary); outline: 2px solid rgba(56,189,248,.3); }
+.adminToolbarCount { color: var(--ui-muted); font-size: 11px; white-space: nowrap; margin-left: auto; }
+.adminToolbarCount strong { color: var(--ui-primary); }
+.adminVisuallyHidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.adminListColumnLabels {
+  display: flex; justify-content: space-between; gap: 10px;
+  padding: 0 17px 12px; margin-bottom: 10px; border-bottom: 1px solid var(--ui-line);
+  color: var(--ui-muted); font-size: 10px; letter-spacing: .03em; font-weight: 700;
+}
+.adminModernPanel .adminModernList { display: grid; gap: 9px; }
+.adminModernPage .adminModernRow.listRow {
+  display: grid; grid-template-columns: 56px minmax(0,1fr) auto;
+  min-height: 92px; gap: 14px; align-items: center;
+  padding: 13px; border: 1px solid var(--ui-line); border-radius: 14px;
+  background: var(--ui-surface-soft); color: var(--ui-ink);
+}
+.adminModernPage .adminModernRow.listRow:hover {
+  border-color: var(--ui-line-strong); background: var(--ui-surface-raised);
+}
+.adminModernRow .listIcon {
+  width: 52px; height: 52px; border-radius: 14px;
+  color: var(--ui-primary); background: var(--ui-primary-soft);
+}
+.adminModernRow .adminPortReportIcon { color: var(--ui-warning); background: var(--ui-warning-soft); }
+.adminModernRow .adminPortAvatar { color: var(--ui-primary); font-size: 19px; }
+.adminModernRow .adminPortListCopy { display: grid; min-width: 0; gap: 6px; }
+.adminModernRow .adminPortListCopy > strong,
+.adminModernRow .adminPortTitleLink { color: var(--ui-ink); font-size: 13px; font-weight: 780; }
+.adminModernRow .adminPortTitleLink:hover { color: var(--ui-primary); }
+.adminModernRow .adminPortListCopy .muted { color: var(--ui-muted); font-size: 11px; }
+.adminRowMeta { font-size: 10px; font-weight: 670; color: var(--ui-muted); }
+.adminModernRow .adminPortChips { gap: 6px; }
+.adminStatusChip {
+  display: inline-flex; gap: 7px; align-items: center; width: fit-content; max-width: 100%;
+  min-height: 26px; padding: 5px 9px;
+  border: 1px solid var(--ui-line); border-radius: 100px; color: var(--ui-text);
+  background: var(--ui-surface-raised); font-size: 10px; font-weight: 800;
+  letter-spacing: .025em; white-space: nowrap;
+}
+.adminStatusChip--success { color: var(--ui-success); background: var(--ui-success-soft); border-color: var(--ui-success-line); }
+.adminStatusChip--warning { color: var(--ui-warning); background: var(--ui-warning-soft); border-color: var(--ui-warning-line); }
+.adminStatusChip--danger { color: var(--ui-danger); background: var(--ui-danger-soft); border-color: var(--ui-danger-line); }
+.adminStatusChip--info { color: var(--ui-primary); background: var(--ui-primary-soft); border-color: rgba(56,189,248,.35); }
+.adminStatusDot { width: 6px; height: 6px; border-radius: 50%; flex: 0 0 6px; background: currentColor; }
+.adminModernRow .button,
+.adminModernPanel .sectionActions .button,
+.adminModernHeading .button {
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  min-height: 40px; padding: 9px 13px;
+  border: 1px solid var(--ui-line); border-radius: 11px;
+  color: var(--ui-text); background: var(--ui-surface-raised);
+  font-size: 11px; font-weight: 750; text-decoration: none;
+}
+.adminModernRow .button:hover:not(:disabled), .adminModernPanel .sectionActions .button:hover:not(:disabled) {
+  background: #344761; border-color: var(--ui-primary); color: var(--ui-ink);
+}
+.adminModernRow .button.danger, .adminModernPanel .sectionActions .button.danger {
+  background: var(--ui-danger-soft); color: var(--ui-danger); border-color: var(--ui-danger-line);
+}
+.adminModernRow .button.danger:hover:not(:disabled), .adminModernPanel .sectionActions .button.danger:hover:not(:disabled) {
+  background: #5d2a3a; border-color: var(--ui-danger);
+}
+.adminModernPanel .sectionActions .button.primary {
+  background: var(--ui-primary); color: var(--ui-primary-contrast); border-color: var(--ui-primary);
+}
+.adminModernRow .adminPortRowActions { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 8px; }
+.adminModernEmpty {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 13px; min-height: 180px; padding: 23px 18px;
+  border: 1px dashed var(--ui-line-strong); border-radius: 13px;
+  color: var(--ui-muted); text-align: center;
+}
+.adminModernEmpty > svg { color: var(--ui-primary); }
+.adminModernEmpty strong { font-size: 12px; color: var(--ui-text); font-weight: 720; }
+.adminModernEmpty .button { color: var(--ui-primary); background: var(--ui-primary-soft); border: 1px solid rgba(56,189,248,.25); border-radius: 10px; padding: 8px 12px; cursor: pointer; }
+.adminModernPage .adminModernAlert { margin: 0 0 19px; border-color: var(--ui-danger-line); color: var(--ui-danger); background: var(--ui-danger-soft); border-radius: 13px; }
+.adminModernPage .adminPortLoading { padding: 24px; color: var(--ui-muted); }
+
+/* Moderation details: main audit content and narrower action panels */
+.adminModernDetailLayout {
+  display: grid; align-items: start; min-width: 0; gap: 17px;
+  grid-template-columns: minmax(0,1.37fr) minmax(285px,.63fr);
+}
+.adminModernDetailLayout > .adminDetailPrimary { grid-row: span 3; }
+.adminModernDetailLayout > .adminDetailSecondary { min-width: 0; }
+.adminModernDetailLayout .pointSectionHeading {
+  display: flex; gap: 13px; justify-content: space-between; align-items: flex-start; margin: 0 0 18px;
+}
+.adminModernDetailLayout .pointSectionHeading h3 { margin: 6px 0 0; font-size: 17px; color: var(--ui-ink); line-height: 1.4; overflow-wrap: anywhere; }
+.adminModernDetailLayout .pointSectionHeading span { color: var(--ui-primary); font-size: 10px; font-weight: 770; letter-spacing: .05em; }
+.adminModernDetailLayout .adminPortChips { justify-content: flex-end; }
+.adminModernDetailLayout .adminPortMetaGrid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 9px; margin: 14px 0 0; }
+.adminModernDetailLayout .metaItem {
+  border: 1px solid var(--ui-line); border-radius: 12px;
+  padding: 14px; background: var(--ui-surface-soft);
+}
+.adminModernDetailLayout .metaItem span { margin: 0 0 7px; font-size: 10px; color: var(--ui-muted); }
+.adminModernDetailLayout .metaItem strong { color: var(--ui-ink); font-size: 12px; line-height: 1.55; }
+.adminModernDetailLayout .metaItem.adminPortMetaWide { grid-column: 1/-1; }
+.adminModernDetailLayout .adminPortDescription {
+  margin: 17px 0 0; padding: 14px; border: 1px solid var(--ui-line);
+  border-radius: 12px; background: var(--ui-surface-soft); color: var(--ui-text);
+  font-size: 12px; white-space: pre-wrap; overflow-wrap: anywhere;
+}
+.adminModernDetailLayout .adminPortGallery {
+  display: grid; grid-auto-flow: column; grid-auto-columns: minmax(230px,85%);
+  gap: 11px; margin: 15px 0; overflow-x: auto;
+  scroll-snap-type: x mandatory; scrollbar-width: thin;
+}
+.adminModernDetailLayout .adminPortGallery img {
+  height: 270px; border: 1px solid var(--ui-line); border-radius: 13px; background: var(--ui-surface-soft);
+}
+.adminModernDetailLayout .historyItem {
+  border: 1px solid var(--ui-line); background: var(--ui-surface-soft); border-radius: 11px;
+}
+.adminModernDetailLayout .adminPortHistoryLink:hover { border-color: var(--ui-primary); }
+.adminModernDetailLayout .adminPortHistoryLink span { color: var(--ui-primary); }
+.adminModernDetailLayout .empty { margin: 0; padding: 22px 12px; border: 1px dashed var(--ui-line); border-radius: 12px; color: var(--ui-muted); text-align: center; font-size: 11px; }
+.adminModernDetailLayout .sectionActions { display: grid; grid-template-columns: 1fr; gap: 9px; }
+.adminModernDetailLayout .sectionActions .button { min-width: 0; width: 100%; text-align: center; }
+.adminModernDetailLayout .formActionsStart { margin-top: 14px; display: flex; }
+.adminModernDetailLayout .formActionsStart .button {
+  display: inline-flex; gap: 7px; align-items: center; padding: 9px 12px; border-radius: 11px;
+  border: 1px solid var(--ui-line); color: var(--ui-primary); background: var(--ui-primary-soft);
+  font-size: 12px; text-decoration: none;
+}
+.adminModernDetailLayout .adminPortActionCard { border-color: #4c4a42 !important; }
+
+/* Confirmation modal */
+.adminConfirmDialog .ui-modal__title { font-size: 20px; line-height: 1.4; color: var(--ui-ink); }
+.adminConfirmMessage { display: flex; align-items: center; gap: 14px; }
+.adminConfirmMessage p { margin: 0; font-size: 13px; color: var(--ui-text); line-height: 1.7; }
+.adminConfirmIcon {
+  display: grid; place-items: center; flex: 0 0 46px;
+  height: 46px; width: 46px; color: var(--ui-primary); background: var(--ui-primary-soft); border-radius: 14px;
+}
+.adminConfirmIcon.isDanger { color: var(--ui-danger); background: var(--ui-danger-soft); }
+.adminConfirmDialog .ui-modal__actions .button { display: inline-flex; align-items: center; justify-content: center; min-height: 43px; padding: 10px 15px; border-radius: 11px; background: var(--ui-surface-soft); border: 1px solid var(--ui-line); color: var(--ui-ink); font-size: 12px; cursor: pointer; }
+.adminConfirmDialog .ui-modal__actions .button.primary { background: var(--ui-primary); border-color: var(--ui-primary); color: var(--ui-primary-contrast); }
+.adminConfirmDialog .ui-modal__actions .button.danger { background: var(--ui-danger-soft); border-color: var(--ui-danger-line); color: var(--ui-danger); }
+
+@media (max-width: 1320px) {
+  .adminDashboardKpis { grid-template-columns: repeat(2,minmax(0,1fr)); }
+}
+@media (max-width: 1180px) {
+  .adminModernDetailLayout { grid-template-columns: 1fr; }
+  .adminModernDetailLayout > .adminDetailPrimary { grid-row: auto; }
+  .adminDashboardLower { grid-template-columns: 1fr; }
+  .adminDashboardFocus { min-height: 205px; }
+}
+@media (max-width: 900px) {
+  .adminModernShell > .adminModernPage { padding: 23px 19px 65px; }
+  .adminDashboardKpis { grid-template-columns: repeat(4,minmax(0,1fr)); }
+}
+@media (max-width: 700px) {
+  .adminDashboardKpis { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .adminModernPanel .adminToolbar { flex-wrap: wrap; }
+  .adminSearchField { flex: 1 1 100%; }
+  .adminFilterSelect { flex: 1 1 120px; }
+  .adminFilterSelect select { width: 100%; max-width: none; }
+  .adminToolbarCount { flex: 1 1 100%; text-align: right; }
+}
+@media (max-width: 560px) {
+  .adminModernShell > .adminModernPage { padding: 17px 14px 55px; }
+  .adminModernPage .adminModernHeading.pageTitle { padding: 21px 18px; min-height: 145px; border-radius: 17px; gap: 14px; }
+  .adminModernHeadingMain { flex: 0 1 auto; width: 100%; }
+  .adminModernHeadingMain h1 { font-size: 28px; }
+  .adminModernHeadingMain p { font-size: 11px; }
+  .adminModernHeadingMain .adminModernEyebrow { font-size: 10px; }
+  .adminModernHeadingAside { justify-content: flex-start; width: 100%; }
+  .adminModernCount { min-width: 73px; padding: 9px 12px; }
+  .adminModernCount strong { font-size: 21px; }
+  .adminModernHeading .adminBackLink { flex: 1; }
+  .adminDashboardKpis { gap: 9px; }
+  .adminKpiCard { min-height: 143px; padding: 13px; gap: 10px; border-radius: 14px; }
+  .adminKpiCardTop > span:first-child { font-size: 10px; }
+  .adminKpiIcon { width: 32px; height: 32px; flex-basis: 32px; border-radius: 10px; }
+  .adminKpiCard > strong { font-size: 27px; }
+  .adminKpiBottom small { font-size: 9px; }
+  .adminModernPage .adminModernPanel.card { padding: 16px 13px; border-radius: 16px; }
+  .adminModernSectionHeading { margin-bottom: 15px; }
+  .adminModernSectionHeading h2 { font-size: 16px; }
+  .adminSectionIcon { width: 36px; height: 36px; flex-basis: 36px; }
+  .adminModernPanel .adminToolbar { padding: 9px; }
+  .adminListColumnLabels { display: none; }
+  .adminModernPage .adminModernRow.listRow { grid-template-columns: 45px minmax(0,1fr); gap: 10px; padding: 11px; }
+  .adminModernRow .listIcon { width: 43px; height: 43px; border-radius: 12px; }
+  .adminModernRow .adminPortListCopy > strong,.adminModernRow .adminPortTitleLink { font-size: 12px; }
+  .adminModernRow .adminRowAction, .adminModernRow .adminPortRowActions {
+    grid-column: 1/-1; width: 100%; justify-content: stretch;
+  }
+  .adminModernRow .adminPortRowActions .button { flex: 1 1 auto; }
+  .adminModernDetailLayout .adminPortGallery { grid-auto-columns: minmax(185px,78vw); }
+  .adminModernDetailLayout .adminPortGallery img { height: 210px; }
+  .adminModernDetailLayout .adminPortMetaGrid { grid-template-columns: 1fr; }
+  .adminModernDetailLayout .metaItem.adminPortMetaWide { grid-column: auto; }
+  .adminConfirmDialog .ui-modal__actions { display: grid; grid-template-columns: 1fr; }
+  .adminConfirmDialog .ui-modal__actions .button { width: 100%; }
+}
+@media (max-width: 350px) {
+  .adminDashboardKpis { grid-template-columns: 1fr; }
+  .adminModernPage .adminModernHeading.pageTitle { padding: 18px 14px; }
+  .adminModernHeadingMain h1 { font-size: 25px; }
+  .adminModernRow .adminPortChips { gap: 4px; }
+  .adminStatusChip { font-size: 9px; padding: 4px 7px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .adminKpiCard,.adminQuickAction { transition: none; }
+}
+
+/* Admin image inspection gallery reuses the accessible public lightbox. */
+.adminModernDetailLayout .adminModernGallery { margin: 14px 0 20px; }
+.adminModernDetailLayout .adminModernGallery .pointPhotoPanel { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.adminModernDetailLayout .adminModernGallery .pointGalleryStage { position: relative; min-width: 0; }
+.adminModernDetailLayout .adminModernGallery .pointPhotoButton {
+  position: relative; display: block; width: 100%; height: 295px; padding: 0;
+  overflow: hidden; cursor: zoom-in; border: 1px solid var(--ui-line);
+  border-radius: 15px; background: var(--ui-surface-soft);
+}
+.adminModernDetailLayout .adminModernGallery .pointHeroImage {
+  display: block; width: 100%; height: 100%; object-fit: contain;
+}
+.adminModernDetailLayout .adminModernGallery .pointPhotoHint {
+  position: absolute; bottom: 11px; right: 11px; display: inline-flex; gap: 8px;
+  align-items: center; padding: 8px 11px; border-radius: 10px;
+  border: 1px solid var(--ui-line); background: var(--ui-surface-glass);
+  color: var(--ui-ink); font-size: 11px;
+}
+.adminModernDetailLayout .adminModernGallery .pointPhotoCounter {
+  position: absolute; left: 12px; top: 12px; padding: 6px 10px;
+  border: 1px solid var(--ui-line); border-radius: 9px; background: var(--ui-surface-glass);
+  color: var(--ui-text); font-size: 11px;
+}
+.adminModernDetailLayout .adminModernGallery .pointThumbRow { display: flex; gap: 9px; overflow-x: auto; padding-bottom: 5px; scrollbar-width: thin; }
+.adminModernDetailLayout .adminModernGallery .pointThumbButton {
+  flex: 0 0 72px; width: 72px; height: 63px; padding: 0;
+  border: 2px solid var(--ui-line); border-radius: 10px; overflow: hidden; background: var(--ui-surface-soft);
+}
+.adminModernDetailLayout .adminModernGallery .pointThumbButton.isActive { border-color: var(--ui-primary); }
+.adminModernDetailLayout .adminModernGallery .pointThumbButton img { width: 100%; height: 100%; object-fit: cover; }
+.adminModernDetailLayout .adminModernGallery .pointHeroFallback {
+  min-height: 155px; display: flex; align-items: center; justify-content: center;
+  flex-direction: column; gap: 9px; border: 1px dashed var(--ui-line);
+  background: var(--ui-surface-soft); border-radius: 15px;
+  text-align: center; color: var(--ui-muted); font-size: 11px;
+}
+.adminModernDetailLayout .adminModernGallery .pointHeroFallback strong { color: var(--ui-text); }
+.adminModernDetailLayout .adminModernGallery .pointGalleryFallbackIcon { color: var(--ui-primary); }
+@media(max-width:560px) {
+  .adminModernDetailLayout .adminModernGallery .pointPhotoButton { height: 205px; }
+  .adminModernDetailLayout .adminModernGallery .pointThumbButton { flex-basis: 62px; width: 62px; height: 54px; }
+}

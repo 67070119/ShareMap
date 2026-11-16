@@ -1,0 +1,235 @@
+/* Self-hosted Thai glyph fallback for consistent browser/OS rendering.
+ * Font source: Google Fonts Noto Sans Thai (SIL OFL); license in public/fonts/OFL.txt. */
+@font-face {
+  font-family: "Noto Sans Thai";
+  src: url("/fonts/NotoSansThai-Variable.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  unicode-range: U+0E00-0E7F, U+200C-200D, U+25CC;
+}
+
+/* OGTB v2 — Phase 1 semantic dark tokens and compatibility layer.
+ * Keep legacy page geometry intact until the corresponding redesign phase.
+ * New work should consume tokens and ui-* primitives rather than hard-coded colors. */
+:root {
+  color-scheme: dark;
+  --ui-bg: #0b1120;
+  --ui-surface: #151e30;
+  --ui-surface-soft: #202d42;
+  --ui-surface-raised: #26364d;
+  --ui-surface-glass: rgba(21, 30, 48, .96);
+  --ui-surface-transparent: rgba(21, 30, 48, .86);
+  --ui-map-bg: #142334;
+  --ui-ink: #f1f5f9;
+  --ui-text: #d6e0ed;
+  --ui-muted: #94a3b8;
+  --ui-line: #344359;
+  --ui-line-strong: #50627d;
+  --ui-primary: #38bdf8;
+  --ui-primary-hover: #7dd3fc;
+  --ui-primary-contrast: #061825;
+  --ui-primary-soft: #10334a;
+  --ui-focus-border: #38bdf8;
+  --ui-danger: #fb7185;
+  --ui-danger-soft: #442532;
+  --ui-danger-line: #91435b;
+  --ui-warning: #fdba74;
+  --ui-warning-soft: #47301e;
+  --ui-warning-line: #93603b;
+  --ui-success: #34d399;
+  --ui-success-soft: #173f37;
+  --ui-success-line: #357b66;
+  --ui-radius-sm: 10px;
+  --ui-radius-md: 14px;
+  --ui-radius-lg: 18px;
+  --ui-radius-xl: 24px;
+  --ui-shadow-sm: 0 6px 18px rgba(1, 7, 17, .25);
+  --ui-shadow: 0 16px 38px rgba(1, 7, 17, .34);
+  --ui-shadow-lg: 0 24px 66px rgba(1, 7, 17, .48);
+  --ui-page-gutter: clamp(14px, 3vw, 28px);
+  --ui-content-max: 1120px;
+}
+html, body { background: var(--ui-bg); color: var(--ui-ink); }
+body { font-family: "Noto Sans Thai", system-ui, -apple-system, "Segoe UI", sans-serif; accent-color: var(--ui-primary); }
+::selection { background: #145575; color: var(--ui-ink); }
+*:focus-visible { outline: 2px solid var(--ui-focus-border); outline-offset: 3px; }
+button, input, select, textarea { font: inherit; }
+input, select, textarea { color-scheme: dark; }
+:disabled { cursor: not-allowed; }
+a, button { -webkit-tap-highlight-color: transparent; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
+/* New UI component foundations (used progressively in phases 2–8). */
+.ui-card { background: var(--ui-surface); border: 1px solid var(--ui-line); border-radius: var(--ui-radius-lg); padding: clamp(16px, 2vw, 24px); box-shadow: var(--ui-shadow-sm); }
+.ui-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 42px; padding: 10px 16px; border: 1px solid var(--ui-line); border-radius: var(--ui-radius-md); background: var(--ui-surface-soft); color: var(--ui-ink); font-weight: 650; line-height: 1.3; cursor: pointer; transition: background-color .16s ease, border-color .16s ease; }
+.ui-button:hover:not(:disabled) { background: var(--ui-surface-raised); border-color: var(--ui-line-strong); }
+.ui-button--primary { background: var(--ui-primary); border-color: var(--ui-primary); color: var(--ui-primary-contrast); }
+.ui-button--primary:hover:not(:disabled) { background: var(--ui-primary-hover); border-color: var(--ui-primary-hover); }
+.ui-button--danger { background: var(--ui-danger-soft); border-color: var(--ui-danger-line); color: var(--ui-danger); }
+.ui-button--ghost { background: transparent; border-color: transparent; }
+.ui-button:disabled { opacity: .55; cursor: not-allowed; }
+.ui-field { display: grid; gap: 6px; min-width: 0; }
+.ui-field__label { font-weight: 650; font-size: 13px; color: var(--ui-text); }
+.ui-field__hint { font-size: 12px; color: var(--ui-muted); }
+.ui-field__error { font-size: 12px; color: var(--ui-danger); }
+.ui-input, .ui-select { min-height: 44px; width: 100%; background: var(--ui-surface-soft); border: 1px solid var(--ui-line); border-radius: var(--ui-radius-sm); padding: 10px 12px; color: var(--ui-ink); }
+.ui-input::placeholder { color: var(--ui-muted); }
+.ui-input:focus, .ui-select:focus { border-color: var(--ui-primary); }
+.ui-input[aria-invalid="true"], .ui-select[aria-invalid="true"] { border-color: var(--ui-danger); }
+.ui-badge { display: inline-flex; align-items: center; border-radius: 999px; padding: 4px 10px; border: 1px solid var(--ui-line); background: var(--ui-surface-soft); color: var(--ui-text); font-size: 12px; font-weight: 650; }
+.ui-badge--success { background: var(--ui-success-soft); border-color: var(--ui-success-line); color: var(--ui-success); }
+.ui-badge--warning { background: var(--ui-warning-soft); border-color: var(--ui-warning-line); color: var(--ui-warning); }
+.ui-badge--danger { background: var(--ui-danger-soft); border-color: var(--ui-danger-line); color: var(--ui-danger); }
+.ui-backdrop { position: fixed; inset: 0; z-index: 5000; display: grid; place-items: center; padding: 16px; background: rgba(2,6,23,.83); }
+.ui-modal { width: min(100%, 520px); max-height: min(90dvh, 760px); overflow-y: auto; background: var(--ui-surface); border: 1px solid var(--ui-line); border-radius: var(--ui-radius-xl); box-shadow: var(--ui-shadow-lg); padding: 24px; }
+.ui-modal__header { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 16px; }
+.ui-modal__title { font-size: 20px; margin: 0; }
+.ui-modal__actions { display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; margin-top: 20px; }
+.ui-toast { padding: 12px 16px; border: 1px solid var(--ui-line); border-radius: var(--ui-radius-md); background: var(--ui-surface-raised); color: var(--ui-ink); }
+.ui-toast--success { border-color: var(--ui-success-line); }
+.ui-toast--error { border-color: var(--ui-danger-line); }
+.ui-skeleton { min-height: 18px; border-radius: 9px; background: linear-gradient(90deg,var(--ui-surface-soft),var(--ui-surface-raised),var(--ui-surface-soft)); background-size: 200% 100%; animation: ui-shimmer 1.7s linear infinite; }
+@keyframes ui-shimmer { to { background-position: -200% 0; } }
+.ui-state { display: grid; gap: 10px; justify-items: center; text-align: center; padding: 32px 18px; background: var(--ui-surface); border: 1px dashed var(--ui-line); border-radius: var(--ui-radius-lg); color: var(--ui-muted); }
+.ui-state__title { margin: 0; font-size: 18px; color: var(--ui-ink); }
+.ui-state--error { border-color: var(--ui-danger-line); }
+/* Legacy shared surfaces. Avoid rewriting API and stateful page JSX in phase 1. */
+.card, .detailCard, .reportCard, .formCard, .authCard, .adminNav, .adminStatCard,
+.adminTableWrap, .adminReportDetail section, .detailGrid div, .adminDetailGrid div,
+.listRow, .adminTableWrap, .editImageItem, .authForm input, .donationForm input,
+.donationForm textarea, .categoryInput, .secondaryFormButton, .secondaryFormLink,
+.reportAction { background: var(--ui-surface); color: var(--ui-ink); border-color: var(--ui-line); }
+.authPage, .formPage, .detailPage, .reportPage, .adminPage, .adminPortShell { background: var(--ui-bg); color: var(--ui-ink); }
+.page, .card, .field, .formGrid { color: var(--ui-ink); }
+.muted, small, .field > label { color: var(--ui-muted); }
+input:not([type="checkbox"]):not([type="radio"]), select, textarea {
+  color: var(--ui-ink); background-color: var(--ui-surface-soft); border-color: var(--ui-line);
+}
+input::placeholder, textarea::placeholder { color: var(--ui-muted); opacity: 1; }
+input:focus, select:focus, textarea:focus { border-color: var(--ui-primary); }
+.button:not(.primary):not(.danger):not(.ghost), .button.soft {
+  color: var(--ui-ink); background: var(--ui-surface-soft); border-color: var(--ui-line);
+}
+.button.primary, .primaryFormButton, .adminPrimaryButton, .mapActionButton,
+.authForm > button, .dashboardButton { background: var(--ui-primary); border-color: var(--ui-primary); color: var(--ui-primary-contrast); }
+.button.primary:hover:not(:disabled), .primaryFormButton:hover:not(:disabled) { background: var(--ui-primary-hover); }
+.button.danger, .ownerStockButton, .adminLogoutButton { background: var(--ui-danger-soft); border-color: var(--ui-danger-line); color: var(--ui-danger); }
+.errorBox, .navStateError { background: var(--ui-danger-soft); color: var(--ui-danger); border-color: var(--ui-danger-line); }
+.successBox, .reportSuccess { background: var(--ui-success-soft); color: var(--ui-success); border-color: var(--ui-success-line); }
+.partialSaveNotice, .locationAccuracyHint, .locationAccuracyNotice { background: var(--ui-warning-soft); color: var(--ui-warning); border-color: var(--ui-warning-line); }
+.statusPill.isPending, .donationStatus.out_of_stock { background: var(--ui-warning-soft); color: var(--ui-warning); }
+.donationStatus.expired { background: var(--ui-surface-soft); color: var(--ui-muted); }
+/* Global nav and admin shared chrome */
+.topbar { background: var(--ui-surface-transparent); color: var(--ui-ink); border-color: var(--ui-line); backdrop-filter: blur(18px); }
+.topbar.mapTopbar { background: linear-gradient(180deg, rgba(11,17,32,.97), rgba(11,17,32,.74) 65%, transparent); }
+.mapTopbar .navActions, .navMenuButton, .navMobileMenu { background: var(--ui-surface-glass); color: var(--ui-ink); border-color: var(--ui-line); }
+.navLink, .navMobileItem { color: var(--ui-text); }
+.navLink:hover, .navMobileItem:hover { color: var(--ui-ink); background: var(--ui-surface-soft); }
+.topbar .button:not(.primary), .topbar .button.soft { background: var(--ui-surface-soft); color: var(--ui-ink); border-color: var(--ui-line); }
+.topbar .button.primary { background: var(--ui-primary); color: var(--ui-primary-contrast); }
+.brandMark { background: var(--ui-primary); color: var(--ui-primary-contrast); }
+.profileMiniNav, .adminPortCount, .adminPortLoading, .stat, .listRow, .metaItem, .historyItem {
+  background: var(--ui-surface); color: var(--ui-ink); border-color: var(--ui-line);
+}
+.profileMiniNavItem.isActive { background: var(--ui-primary-soft); border-color: var(--ui-primary); color: var(--ui-primary); }
+.adminPortStat:hover, .listRow:hover { background: var(--ui-surface-soft); border-color: var(--ui-line-strong); }
+.chip, .adminPortAvatar { background: var(--ui-primary-soft); color: var(--ui-primary); border-color: var(--ui-line); }
+.adminChipActive { background: var(--ui-success-soft); color: var(--ui-success); border-color: var(--ui-success-line); }
+.adminChipDanger { background: var(--ui-danger-soft); color: var(--ui-danger); border-color: var(--ui-danger-line); }
+.adminChipWarning { background: var(--ui-warning-soft); color: var(--ui-warning); border-color: var(--ui-warning-line); }
+.adminPortTitleLink, .adminPortHistoryLink span { color: var(--ui-primary); }
+/* Map shells and overlays — map tiles are external images, controls must remain legible. */
+.mapShell, .mapCanvas, .pawMapCanvas, .donationMapCanvas, .pickerMap,
+.locationPreviewMap, .locationPickerOverlay { background: var(--ui-map-bg); }
+.mapSummary, .mapStatus, .mapFloatButton, .radiusFilter, .mapCategoryFilter,
+.mapFilterPanel, .mapTopBar > div, .locateButton, .mapGhostLink, .mapGhostButton,
+.locationPreviewBadge, .locationPickerTopbar, .locationPickerFooter {
+  background: var(--ui-surface-glass); color: var(--ui-ink); border-color: var(--ui-line);
+}
+.mapStatusError { background: var(--ui-danger-soft); color: var(--ui-danger); border-color: var(--ui-danger-line); }
+.mapAccuracyNotice { background: var(--ui-warning-soft); color: var(--ui-warning); border-color: var(--ui-warning-line); }
+.mapShell .leaflet-control-zoom a, .pickerMap .leaflet-control-zoom a,
+.navExperience .leaflet-control-zoom a { background: var(--ui-surface) !important; color: var(--ui-ink) !important; border-color: var(--ui-line) !important; }
+.mapShell .leaflet-control-attribution, .pickerMap .leaflet-control-attribution,
+.navExperience .leaflet-control-attribution { background: var(--ui-surface-glass) !important; color: var(--ui-muted) !important; }
+.leaflet-popup-content-wrapper, .leaflet-popup-tip { background: var(--ui-surface); color: var(--ui-ink); }
+.popupCard, .popupData, .pointMetaItem, .pointDetailList > div, .pointHeroFallback,
+.pointThumbButton, .pointPhotoButton { background: var(--ui-surface-soft); color: var(--ui-ink); border-color: var(--ui-line); }
+.pointSeenBadge, .pointSectionHeading span { color: var(--ui-primary); }
+.pointSeenBadge { background: var(--ui-primary-soft); border-color: var(--ui-primary); }
+.pointStatusBadge { color: var(--ui-text); background: var(--ui-surface-soft); border-color: var(--ui-line); }
+.pointHeroFallback { background-image: linear-gradient(145deg,var(--ui-surface-soft),var(--ui-surface)); }
+.pointManageActions .button.danger { background: var(--ui-danger-soft); border-color: var(--ui-danger-line); }
+.reportReasonList label { background: var(--ui-surface-soft); color: var(--ui-ink); border-color: var(--ui-line); }
+.reportReasonList label:hover { background: var(--ui-surface-raised); border-color: var(--ui-line-strong); }
+.reportReasonList label.isSelected { background: var(--ui-primary-soft); border-color: var(--ui-primary); }
+.locationPreviewBadge, .donationImageSource { background: var(--ui-surface-glass); color: var(--ui-ink); }
+/* Navigation experience is a separate CSS token scope in the existing implementation. */
+.navExperience {
+  --nav-surface: var(--ui-surface); --nav-surface-soft: var(--ui-surface-soft);
+  --nav-ink: var(--ui-ink); --nav-text: var(--ui-text); --nav-muted: var(--ui-muted);
+  --nav-line: var(--ui-line); --nav-primary: var(--ui-primary);
+  --nav-danger: var(--ui-danger); --nav-danger-soft: var(--ui-danger-soft);
+  --nav-shadow-sm: var(--ui-shadow-sm);
+  background: var(--ui-map-bg); color: var(--ui-ink);
+}
+.navStandaloneState { background: var(--ui-bg); color: var(--ui-ink); }
+.navStateCard { background: var(--ui-surface); color: var(--ui-ink); border-color: var(--ui-line); }
+.navExperience .navRoundButton, .navExperience .navDestinationCompact,
+.navExperience .navMapButton, .navExperience .navActiveTopBar,
+.navExperience .navBottomSheet { background: var(--ui-surface-glass); color: var(--ui-ink); border-color: var(--ui-line); }
+.navExperience .navDistanceSummary, .navExperience .navGpsPill { background: var(--ui-surface-soft); }
+.navExperience .navOffRouteNotice { background: var(--ui-warning-soft); color: var(--ui-warning); border-color: var(--ui-warning-line); }
+.navExperience .navRecoveryNotice { background: var(--ui-primary-soft); color: var(--ui-primary); border-color: var(--ui-primary); }
+.navExperience .navSheetHandle { background: var(--ui-line-strong); }
+/* Desktop and touch foundations */
+@media (max-width: 700px) {
+  .ui-button, .button, .ui-input, .ui-select { min-height: 44px; }
+  .ui-modal { padding: 18px; }
+}
+
+
+/* Phase 10: ensure attribution copyright links remain visible and easy to tap.
+ * Inline credit links are retained; no attribution is removed or obscured. */
+:where(.mapShell, .navExperienceV2, .pickerMap, .locationPickerOverlay, .donationMapCanvas, .pawMapCanvas)
+.leaflet-control-attribution a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  min-height: 28px;
+  padding: 3px 7px;
+  line-height: 1.4;
+  font-size: 11px;
+  text-underline-offset: 2px;
+}
+:where(.mapShell, .navExperienceV2, .pickerMap, .locationPickerOverlay, .donationMapCanvas, .pawMapCanvas)
+.leaflet-control-attribution a:focus-visible {
+  outline: 2px solid var(--ui-focus-border);
+  outline-offset: -1px;
+  border-radius: 3px;
+}
+
+
+/* Phase 10: small breadcrumb links receive a usable keyboard/touch hit area. */
+:where(.appBreadcrumbPart, .donationEditorBreadcrumb, .pointBreadcrumbs) > a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  min-height: 34px;
+  padding: 6px 3px;
+  border-radius: 6px;
+}
+
+
+/* Phase 10: Leaflet applies a separate Helvetica/Arial font stack to map overlays.
+ * Override it so Thai place names in marker tooltips and popups are readable. */
+.leaflet-container,
+.leaflet-tooltip,
+.leaflet-popup-content-wrapper,
+.leaflet-popup-content {
+  font-family: "Noto Sans Thai", system-ui, -apple-system, "Segoe UI", sans-serif;
+}

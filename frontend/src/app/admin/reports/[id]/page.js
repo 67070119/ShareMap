@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import AdminNav from '../../../../components/common/AdminNav';
 import { api } from '../../../../lib/api';
 import { formatBangkokDate } from '../../../../lib/date';
+import { AdminPageHeading, AdminStatus, AdminConfirmDialog } from '../../../../components/admin/AdminUI';
 
 const REASON_LABELS = {
   ILLEGAL_ITEM: 'สิ่งของผิดกฎหมาย',
@@ -21,6 +22,7 @@ export default function AdminReportDetailPage() {
   const [report, setReport] = useState(null);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState('');
+  const [deletePending, setDeletePending] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -36,10 +38,11 @@ export default function AdminReportDetailPage() {
     setBusy('report');
     setError('');
     try {
-      setReport(await api(`/api/admin/reports/${id}`, {
+      const updated = await api(`/api/admin/reports/${id}`, {
         method: 'PATCH',
         body: JSON.stringify({ status: 'RESOLVED' }),
-      }));
+      });
+      setReport((current) => ({ ...current, ...updated, donation: updated.donation ?? current.donation }));
     } catch (requestError) {
       setError(requestError.message || 'อัปเดต Report ไม่สำเร็จ');
     } finally {
@@ -89,14 +92,16 @@ export default function AdminReportDetailPage() {
   }
 
   async function deleteDonation() {
-    if (!report?.donation || !window.confirm('ลบ Donation นี้ออกจากระบบใช่หรือไม่')) return;
+    if (!report?.donation || busy) return;
     setBusy('delete');
     setError('');
     try {
       await api(`/api/admin/donations/${report.donation.id}`, { method: 'DELETE' });
+      setDeletePending(false);
       router.replace('/admin/reports');
     } catch (requestError) {
       setError(requestError.message || 'ลบ Donation ไม่สำเร็จ');
+      setDeletePending(false);
       setBusy('');
     }
   }
@@ -104,25 +109,21 @@ export default function AdminReportDetailPage() {
   return (
     <div className="adminPortShell">
       <AdminNav />
-      <main className="page adminPortPage">
-        <header className="pageTitle">
-          <div>
-            <span className="eyebrow">ADMIN · REPORT</span>
-            <h1>{report ? REASON_LABELS[report.reason] || report.reason : 'Report Detail'}</h1>
-            {report && <p>รายงานเมื่อ {formatBangkokDate(report.createdAt)} · โดย {report.reporter?.name || '-'}</p>}
-          </div>
-          <Link href="/admin/reports" className="button">← กลับ Reports</Link>
-        </header>
+      <main className="page adminPortPage adminModernPage">
+        <AdminPageHeading title={report ? REASON_LABELS[report.reason] || report.reason : 'รายละเอียดรายงาน'}
+          section="ADMIN / REPORT REVIEW" icon="reports"
+          description={report ? `รายงานเมื่อ ${formatBangkokDate(report.createdAt)} · โดย ${report.reporter?.name || '-'}` : 'กำลังโหลดข้อมูลรายงาน'}
+          back={{ href: '/admin/reports', label: 'กลับรายการรายงาน' }}/>
 
-        {error && <div className="errorBox">{error}</div>}
+        {error && <div className="errorBox adminModernAlert" role="alert">{error}</div>}
         {!report && !error && <div className="centerState adminPortLoading">กำลังโหลด Report...</div>}
 
         {report && (
-          <>
-            <section className="card">
+          <div className="adminModernDetailLayout adminReportDetailLayout">
+            <section className="card adminModernPanel adminDetailPrimary">
               <div className="pointSectionHeading">
                 <div><span>ข้อมูล Report</span><h3>{REASON_LABELS[report.reason] || report.reason}</h3></div>
-                <span className={`chip ${report.status === 'PENDING' ? 'adminChipWarning' : 'adminChipActive'}`}>{report.status}</span>
+                <AdminStatus value={report.status}/>
               </div>
               <div className="metaGrid adminPortMetaGrid">
                 <div className="metaItem"><span>เหตุผล</span><strong>{report.reason}</strong></div>
@@ -133,7 +134,7 @@ export default function AdminReportDetailPage() {
               <p className="adminPortDescription">{report.description || 'ไม่มีรายละเอียดเพิ่มเติม'}</p>
             </section>
 
-            <section className="card">
+            <section className="card adminModernPanel adminDetailSecondary">
               <div className="pointSectionHeading"><div><span>โพสต์ที่เกี่ยวข้อง</span><h3>{report.donation?.title || 'Donation'}</h3></div></div>
               <div className="metaGrid adminPortMetaGrid">
                 <div className="metaItem"><span>ประเภท</span><strong>{report.donation?.category || '-'}</strong></div>
@@ -144,7 +145,7 @@ export default function AdminReportDetailPage() {
               {report.donation && <div className="formActions formActionsStart"><Link href={`/admin/donations/${report.donation.id}`} className="button">เปิด Donation Detail →</Link></div>}
             </section>
 
-            <section className="card adminPortActionCard">
+            <section className="card adminModernPanel adminDetailSecondary adminPortActionCard">
               <div className="pointSectionHeading"><div><span>การจัดการ</span><h3>ดำเนินการกับ Report</h3></div></div>
               <div className="sectionActions">
                 <button type="button" className="button" onClick={hideDonation} disabled={Boolean(busy) || report.donation?.isHidden}>
@@ -153,14 +154,17 @@ export default function AdminReportDetailPage() {
                 <button type="button" className="button danger" onClick={suspendOwner} disabled={Boolean(busy) || !report.donation?.owner?.isActive}>
                   {busy === 'owner' ? 'กำลังระงับ...' : report.donation?.owner?.isActive ? 'ระงับเจ้าของโพสต์' : 'เจ้าของถูกระงับแล้ว'}
                 </button>
-                <button type="button" className="button danger" onClick={deleteDonation} disabled={Boolean(busy)}>{busy === 'delete' ? 'กำลังลบ...' : 'ลบ Donation'}</button>
+                <button type="button" className="button danger" onClick={() => setDeletePending(true)} disabled={Boolean(busy)}>{busy === 'delete' ? 'กำลังลบ...' : 'ลบ Donation'}</button>
                 <button type="button" className="button primary" onClick={resolveReport} disabled={Boolean(busy) || report.status === 'RESOLVED'}>
                   {busy === 'report' ? 'กำลังบันทึก...' : report.status === 'RESOLVED' ? 'ตรวจสอบแล้ว' : 'ปิด Report'}
                 </button>
               </div>
             </section>
-          </>
+          </div>
         )}
+        <AdminConfirmDialog intent={deletePending} destructive busy={Boolean(busy)}
+          title="ยืนยันลบโพสต์ถาวร?" message={report?.donation ? `โพสต์ “${report.donation.title}” จะถูกลบอย่างถาวร` : ''}
+          actionLabel="ยืนยันลบโพสต์" onCancel={() => setDeletePending(false)} onConfirm={deleteDonation}/>
       </main>
     </div>
   );

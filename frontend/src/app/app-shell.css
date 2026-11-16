@@ -1,0 +1,170 @@
+/* OGTB v2 — Phase 2. Shared navigation and page chrome only.
+ * Page-specific layouts remain in their own phases. */
+.appBrand {
+  display: inline-flex; align-items: center; gap: 11px; flex: 0 0 auto;
+  min-width: 0; text-decoration: none; color: var(--ui-ink);
+}
+.appBrandMark {
+  width: 43px; height: 43px; display: grid; place-items: center; flex-shrink: 0;
+  border-radius: 14px; color: var(--ui-primary-contrast);
+  background: linear-gradient(140deg, var(--ui-primary), #0ea5e9);
+  box-shadow: 0 6px 18px rgba(14,165,233,.22);
+}
+.appBrandText { min-width: 0; display: grid; gap: 1px; }
+.appBrandText strong { color: var(--ui-ink); font-size: 21px; letter-spacing: -.055em; line-height: 1.05; font-weight: 830; }
+.appBrandDot { color: var(--ui-primary); }
+.appBrandText small { color: var(--ui-muted); font-size: 9px; letter-spacing: .175em; font-weight: 760; }
+.topbar.appHeader {
+  height: 74px; min-height: 74px; padding: 0 max(30px,env(safe-area-inset-left));
+  display: flex; align-items: center; gap: 30px;
+  background: rgba(11,17,32,.96); border-bottom: 1px solid var(--ui-line);
+  box-shadow: 0 4px 22px rgba(0,0,0,.12); backdrop-filter: blur(20px);
+}
+.appHeaderLinks { display: flex; align-items: center; gap: 7px; margin-left: 28px; }
+.appHeaderLink {
+  display: inline-flex; align-items: center; gap: 9px; min-height: 44px; padding: 0 15px;
+  border: 1px solid transparent; border-radius: 12px; color: var(--ui-muted);
+  font-size: 13px; font-weight: 700; text-decoration: none; transition: color .15s, background .15s;
+}
+.appHeaderLink:hover { color: var(--ui-ink); background: var(--ui-surface-soft); }
+.appHeaderLink.isActive { color: var(--ui-primary); border-color: rgba(56,189,248,.12); background: var(--ui-primary-soft); }
+.appHeaderActions { display: flex; align-items: center; gap: 9px; margin-left: auto; }
+.appHeaderAction {
+  display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+  min-height: 42px; padding: 9px 16px; border: 1px solid var(--ui-line);
+  border-radius: 12px; background: var(--ui-surface-soft); color: var(--ui-ink);
+  font: inherit; font-size: 13px; font-weight: 730; text-decoration: none; cursor: pointer;
+  transition: background .15s, border-color .15s, transform .15s;
+}
+.appHeaderAction:hover { transform: translateY(-1px); background: var(--ui-surface-raised); border-color: var(--ui-line-strong); }
+.appHeaderAction--primary { background: var(--ui-primary); color: var(--ui-primary-contrast); border-color: var(--ui-primary); }
+.appHeaderAction--primary:hover { background: var(--ui-primary-hover); border-color: var(--ui-primary-hover); }
+.appHeaderAction--subtle { background: transparent; color: var(--ui-text); }
+.appHeaderAuthLoading { height: 40px; width: 110px; border-radius: 12px; background: var(--ui-surface-soft); }
+.topbar.appHeader.mapTopbar {
+  height: 91px; min-height: 0; padding-top: max(14px,env(safe-area-inset-top)); padding-bottom: 12px;
+  background: linear-gradient(to bottom, rgba(11,17,32,.98),rgba(11,17,32,.87) 65%,transparent);
+  border-bottom: 0; box-shadow: none; pointer-events: none;
+}
+.mapTopbar .appBrand, .mapTopbar .appHeaderLinks, .mapTopbar .appHeaderActions, .mapTopbar .appMobileNavigation { pointer-events: auto; }
+.mapTopbar .appHeaderLinks { margin-left: auto; padding: 3px; background: var(--ui-surface-glass); border: 1px solid var(--ui-line); border-radius: 14px; }
+.mapTopbar .appHeaderActions { margin-left: 0; }
+.mapTopbar .appHeaderAction { background: var(--ui-surface-glass); }
+.mapTopbar .appHeaderAction--primary { background: var(--ui-primary); }
+
+/* One reusable mobile drawer for public and admin chrome. */
+.appMobileNavigation { display: none; margin-left: auto; position: relative; flex: 0 0 auto; }
+.appMenuTrigger, .appNavDrawerClose {
+  display: inline-flex; align-items: center; justify-content: center;
+  height: 44px; width: 44px; border: 1px solid var(--ui-line);
+  border-radius: 12px; color: var(--ui-ink); background: var(--ui-surface-soft);
+  cursor: pointer; box-shadow: var(--ui-shadow-sm);
+}
+.appNavScrim { position: fixed; inset: 0; z-index: 1200; width: 100vw; height: 100dvh; background: rgba(1,6,14,.67); border: 0; cursor: default; }
+.appNavDrawer {
+  position: fixed; top: 0; right: 0; bottom: 0; z-index: 1201;
+  width: min(350px,88vw); max-height: 100dvh; overflow: auto; overscroll-behavior: contain;
+  padding: max(19px,env(safe-area-inset-top)) 17px max(19px,env(safe-area-inset-bottom));
+  color: var(--ui-ink); background: var(--ui-surface);
+  border-left: 1px solid var(--ui-line); box-shadow: -18px 0 60px rgba(1,6,14,.46);
+}
+.appNavDrawerHeading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px; font-size: 18px; font-weight: 800; }
+.appNavDrawerLinks { display: grid; gap: 7px; }
+.appNavDrawerLink {
+  display: flex; gap: 12px; align-items: center; min-height: 52px; padding: 11px 13px;
+  border: 1px solid transparent; border-radius: 13px; color: var(--ui-text);
+  font-size: 14px; font-weight: 700; text-decoration: none;
+}
+.appNavDrawerLink:hover { background: var(--ui-surface-soft); color: var(--ui-ink); }
+.appNavDrawerLink.isActive { background: var(--ui-primary-soft); border-color: rgba(56,189,248,.35); color: var(--ui-primary); }
+.appNavDrawerArrow { margin-left: auto; }
+.appNavDrawerFooter { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--ui-line); }
+.appNavLogout { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 48px; padding: 10px 13px; border: 1px solid var(--ui-danger-line); border-radius: 12px; background: var(--ui-danger-soft); color: var(--ui-danger); font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
+
+/* Admin: fixed-feeling top bar and persistent desktop sidebar. */
+.adminPortShell {
+  display: grid; grid-template-columns: 244px minmax(0,1fr);
+  grid-template-rows: 74px minmax(0,1fr);
+  grid-template-areas: "topbar topbar" "sidebar content";
+  align-items: start; min-height: 100dvh; background: var(--ui-bg);
+}
+.adminPortShell > .appAdminHeader { grid-area: topbar; position: sticky; top: 0; z-index: 1000; }
+.topbar.appAdminHeader {
+  height: 74px; min-height: 74px; background: rgba(11,17,32,.98);
+  padding: 0 max(28px,env(safe-area-inset-left)); gap: 25px;
+  border-bottom: 1px solid var(--ui-line); box-shadow: none;
+}
+.appAdminContext { min-width: 0; display: grid; gap: 1px; margin-left: 20px; }
+.appAdminContext > strong { font-size: 14px; font-weight: 740; color: var(--ui-ink); }
+.appBreadcrumbs { display: flex; align-items: center; min-width: 0; gap: 3px; color: var(--ui-muted); font-size: 11px; line-height: 1.4; }
+.appBreadcrumbPart { display: inline-flex; align-items: center; gap: 3px; min-width: 0; white-space: nowrap; }
+.appBreadcrumbs a { color: var(--ui-muted); text-decoration: none; }
+.appBreadcrumbs a:hover { color: var(--ui-primary); }
+.appBreadcrumbPart [aria-current="page"] { color: var(--ui-primary); }
+.appAdminHeaderActions { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+.appAdminSidebar {
+  grid-area: sidebar; position: sticky; top: 74px; align-self: start;
+  display: flex; flex-direction: column; gap: 20px;
+  height: calc(100dvh - 74px); min-height: 470px; padding: 30px 14px 18px;
+  background: #101a2a; border-right: 1px solid var(--ui-line);
+}
+.appAdminSidebarHeading { display: grid; gap: 7px; padding: 0 13px 7px; color: var(--ui-text); }
+.appAdminSidebarEyebrow { font-size: 10px; font-weight: 800; letter-spacing: .18em; color: var(--ui-primary); }
+.appAdminSidebarHeading strong { font-size: 15px; }
+.appAdminSidebarLinks { display: grid; gap: 5px; }
+.appAdminSidebarLink {
+  display: flex; align-items: center; gap: 12px; min-height: 49px;
+  padding: 11px 13px; border: 1px solid transparent; border-radius: 13px;
+  color: var(--ui-muted); text-decoration: none; font-size: 13px; font-weight: 680;
+  transition: background .16s,color .16s;
+}
+.appAdminSidebarLink:hover { background: var(--ui-surface-soft); color: var(--ui-ink); }
+.appAdminSidebarLink.isActive { background: var(--ui-primary-soft); border-color: rgba(56,189,248,.28); color: var(--ui-primary); }
+.appAdminSidebarActiveDot { margin-left: auto; height: 7px; width: 7px; border-radius: 100%; background: var(--ui-primary); box-shadow: 0 0 0 4px rgba(56,189,248,.1); }
+.appAdminSidebarFooter {
+  display: flex; align-items: center; gap: 10px; margin-top: auto; padding: 14px 8px 0;
+  border-top: 1px solid var(--ui-line);
+}
+.appAdminRoleMark { display: grid; place-items: center; width: 36px; height: 36px; flex: 0 0 36px; border-radius: 12px; background: var(--ui-primary-soft); color: var(--ui-primary); }
+.appAdminSidebarFooter > span:last-child { display: grid; gap: 3px; }
+.appAdminSidebarFooter strong { font-size: 12px; color: var(--ui-ink); }
+.appAdminSidebarFooter small { font-size: 10px; color: var(--ui-muted); }
+.adminPortShell > .adminPortPage {
+  grid-area: content; width: min(100%,1380px); max-width: none; min-width: 0;
+  margin: 0 auto; padding: 34px clamp(22px,3vw,46px) 66px;
+}
+.adminPortShell .adminPortPage .pageTitle { margin-bottom: 26px; }
+.adminPortShell .adminPortPage .pageTitle .eyebrow { color: var(--ui-primary); }
+
+/* Responsive shell without changing any page or API logic. */
+@media (max-width: 1120px) {
+  .adminPortShell { grid-template-columns: 218px minmax(0,1fr); }
+  .appHeaderLinks { margin-left: 6px; }
+}
+@media (max-width: 900px) {
+  .adminPortShell { grid-template-columns: minmax(0,1fr); grid-template-rows: auto 1fr; grid-template-areas: "topbar" "content"; }
+  .appAdminSidebar { display: none; }
+  .appAdminHeader .navDesktopActions { display: none !important; }
+  .appAdminHeader .appMobileNavigation { display: block; }
+  .adminPortShell > .adminPortPage { padding: 25px max(20px,env(safe-area-inset-left)) 60px; }
+}
+@media (max-width: 820px) {
+  .appHeader .navDesktopActions { display: none !important; }
+  .appHeader .appMobileNavigation { display: block; }
+  .topbar.appHeader, .topbar.appAdminHeader { height: 68px; min-height: 68px; padding: 0 max(18px,env(safe-area-inset-left)); }
+  .topbar.appHeader.mapTopbar { height: 82px; padding-top: max(12px,env(safe-area-inset-top)); padding-bottom: 8px; }
+  .appAdminContext { margin-left: 0; margin-right: auto; }
+  .appAdminContext > strong { font-size: 12px; }
+  .adminPortShell { grid-template-rows: 68px 1fr; }
+}
+@media (max-width: 560px) {
+  .topbar.appHeader, .topbar.appAdminHeader { min-height: 68px; height: 68px; padding: 0 max(14px,env(safe-area-inset-left)); gap: 10px; }
+  .appBrandMark { width: 39px; height: 39px; border-radius: 12px; }
+  .appBrandText strong { font-size: 20px; }
+  .appBrandText small { font-size: 8px; letter-spacing: .12em; display: block; }
+  .appAdminContext { display: none; }
+  .adminPortShell > .adminPortPage { padding: 20px max(14px,env(safe-area-inset-left)) 52px; }
+  .adminPortShell .adminPortPage .pageTitle { margin-bottom: 18px; }
+  .topbar.appHeader.mapTopbar { height: 76px; }
+}
+@media (max-width: 350px) { .appBrandText small { display: none; } .appBrandText strong { font-size: 18px; } }

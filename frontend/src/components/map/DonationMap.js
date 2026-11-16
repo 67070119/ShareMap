@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import { Circle, MapContainer, Marker, Popup, TileLayer, ZoomControl, useMap } from 'react-leaflet';
 
@@ -45,6 +45,7 @@ function RadiusViewport({ center, radiusKm }) {
     const latDelta = radiusKm / 111.32;
     const lngScale = Math.max(0.2, Math.cos((latitude * Math.PI) / 180));
     const lngDelta = radiusKm / (111.32 * lngScale);
+    const desktop = map.getSize().x > 900;
     map.flyToBounds([
       [latitude - latDelta, longitude - lngDelta],
       [latitude + latDelta, longitude + lngDelta],
@@ -52,11 +53,30 @@ function RadiusViewport({ center, radiusKm }) {
       animate: true,
       duration: 0.42,
       maxZoom: 16,
-      paddingTopLeft: [44, 110],
-      paddingBottomRight: [44, 110],
+      paddingTopLeft: desktop ? [410, 110] : [28, 100],
+      paddingBottomRight: desktop ? [48, 105] : [28, 210],
     });
   }, [center, radiusKm, map]);
 
+  return null;
+}
+
+function FocusSelectedMarker({ selectedId, donationMarkers }) {
+  const map = useMap();
+  useEffect(() => {
+    if (!selectedId) return;
+    const marker = donationMarkers.current.get(selectedId);
+    if (!marker) return;
+    marker.openPopup();
+    const position = marker.getLatLng();
+    if (map.getSize().x > 900) {
+      // Offset desktop map center to keep the popup clear of the result sidebar.
+      const projected = map.project(position, map.getZoom()).subtract([120, 0]);
+      map.panTo(map.unproject(projected, map.getZoom()), { animate: true });
+    } else {
+      map.panTo(position, { animate: true });
+    }
+  }, [selectedId, donationMarkers, map]);
   return null;
 }
 
@@ -66,8 +86,10 @@ export default function DonationMap({
   userAccuracy = null,
   radiusKm,
   returnTo = '/',
+  selectedId = null,
+  onSelectDonation = () => {},
 }) {
-  const [selectedId, setSelectedId] = useState(null);
+  const markerRefs = useRef(new Map());
 
   return (
     <MapContainer
@@ -84,6 +106,7 @@ export default function DonationMap({
       <ZoomControl position="bottomright" />
       <LocateUser position={userPosition} />
       <RadiusViewport center={userPosition} radiusKm={radiusKm} />
+      <FocusSelectedMarker selectedId={selectedId} donationMarkers={markerRefs} />
 
       {userPosition && Number.isFinite(userAccuracy) && userAccuracy > 0 && (
         <Circle
@@ -91,7 +114,7 @@ export default function DonationMap({
           radius={userAccuracy}
           interactive={false}
           className="mapAccuracyCircle"
-          pathOptions={{ color: '#2563eb', weight: 1, opacity: 0.55, fillColor: '#2563eb', fillOpacity: 0.09, dashArray: '4 5' }}
+          pathOptions={{ color: '#38bdf8', weight: 1, opacity: 0.55, fillColor: '#38bdf8', fillOpacity: 0.09, dashArray: '4 5' }}
         />
       )}
 
@@ -101,7 +124,7 @@ export default function DonationMap({
           radius={radiusKm * 1000}
           interactive={false}
           className="mapRadiusCircle"
-          pathOptions={{ color: '#2563eb', weight: 2, opacity: 0.72, fillColor: '#2563eb', fillOpacity: 0.07 }}
+          pathOptions={{ color: '#38bdf8', weight: 2, opacity: 0.72, fillColor: '#38bdf8', fillOpacity: 0.07 }}
         />
       )}
 
@@ -114,10 +137,14 @@ export default function DonationMap({
         return (
           <Marker
             key={donation.id}
+            ref={(marker) => {
+              if (marker) markerRefs.current.set(donation.id, marker);
+              else markerRefs.current.delete(donation.id);
+            }}
             position={[donation.latitude, donation.longitude]}
             icon={donationIcon(selected)}
             zIndexOffset={selected ? 500 : 0}
-            eventHandlers={{ click: () => setSelectedId(donation.id), popupclose: () => setSelectedId(null) }}
+            eventHandlers={{ click: () => onSelectDonation(donation.id) }}
           >
             <Popup className="pawPopup" closeButton={false} minWidth={238}>
               <div className="popupCard">
