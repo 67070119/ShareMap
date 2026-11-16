@@ -1,7 +1,11 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import './admin-create.css';
+
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import AdminNav from '../../../components/common/AdminNav';
+import AdminCreateDialog from '../../../components/admin/AdminCreateDialog';
+import { useAuth } from '../../../lib/useAuth';
 import NavIcon from '../../../components/common/NavIcon';
 import {
   AdminPageHeading, AdminSectionHeading, AdminStatus, AdminSearchBar,
@@ -10,6 +14,10 @@ import {
 import { api } from '../../../lib/api';
 
 export default function AdminUsersPage() {
+  const { user: sessionUser, loading: authLoading } = useAuth();
+  const isAdmin = !authLoading && sessionUser?.role === 'ADMIN' && sessionUser?.isActive !== false;
+  const [createOpen, setCreateOpen] = useState(false);
+  const [success, setSuccess] = useState('');
   const [users, setUsers] = useState([]);
   const [error, setError] = useState('');
   const [busyId, setBusyId] = useState(null);
@@ -20,11 +28,37 @@ export default function AdminUsersPage() {
   const [confirmUser, setConfirmUser] = useState(null);
 
   useEffect(() => {
+    if (!isAdmin) return undefined;
     let active = true;
-    api('/api/admin/users').then((items) => { if (active) setUsers(items); })
-      .catch((requestError) => { if (active) setError(requestError.message || 'โหลด Users ไม่สำเร็จ'); })
-      .finally(() => { if (active) setLoaded(true); });
+    api('/api/admin/users').then((items) => {
+      if (active) { setUsers(items); setError(''); }
+    }).catch((requestError) => {
+      if (active) setError(requestError.message || 'โหลด Users ไม่สำเร็จ');
+    }).finally(() => { if (active) setLoaded(true); });
     return () => { active = false; };
+  }, [isAdmin]);
+
+  const closeCreate = useCallback(() => setCreateOpen(false), []);
+  const createAdmin = useCallback(async (payload) => {
+    // A successful POST is never retried when the follow-up GET fails.
+    const created = await api('/api/admin/users/admins', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+    setUsers((current) => [...current.filter((item) => item.id !== created.id), created]);
+    setCreateOpen(false);
+    setSearch('');
+    setRoleFilter('ALL');
+    setStatusFilter('ALL');
+    setError('');
+    setSuccess('สร้างบัญชี Admin สำเร็จ');
+    try {
+      const updated = await api('/api/admin/users');
+      setUsers(updated);
+    } catch {
+      // Keep the newly created row in local state: do not suggest retrying POST.
+      setSuccess('สร้าง Admin สำเร็จแล้ว แต่ไม่สามารถโหลดรายการล่าสุดได้');
+    }
   }, []);
 
   const filteredUsers = useMemo(() => users.filter((user) => {
@@ -58,9 +92,16 @@ export default function AdminUsersPage() {
     <main className="page adminPortPage adminModernPage">
       <AdminPageHeading title="จัดการผู้ใช้" section="ADMIN CONSOLE / USERS" icon="users"
         description="ตรวจสอบบัญชีผู้ใช้ บทบาท และสถานะการเข้าใช้งาน" count={users.length} countLabel="บัญชี"/>
-      {error && <div className="errorBox adminModernAlert" role="alert">{error}</div>}
-      {!loaded && !error && <div className="centerState adminPortLoading">กำลังโหลดข้อมูลผู้ใช้...</div>}
-      {loaded && <section className="card adminModernPanel adminPortListCard">
+      {isAdmin && <div className="adminUsersActions">
+        <button type="button" className="button adminAddUserButton"
+          disabled={Boolean(busyId)} onClick={() => { setSuccess(''); setCreateOpen(true); }}>
+          <NavIcon name="plus" size={19}/> เพิ่ม Admin
+        </button>
+      </div>}
+      {success && isAdmin && <div className="adminCreateSuccess" role="status">{success}</div>}
+      {error && isAdmin && <div className="errorBox adminModernAlert" role="alert">{error}</div>}
+      {isAdmin && !loaded && !error && <div className="centerState adminPortLoading">กำลังโหลดข้อมูลผู้ใช้...</div>}
+      {isAdmin && loaded && <section className="card adminModernPanel adminPortListCard">
         <AdminSectionHeading eyebrow="ACCOUNT DIRECTORY" title="บัญชีทั้งหมด" icon="users"/>
         <AdminSearchBar value={search} onChange={setSearch} placeholder="ค้นหาชื่อหรืออีเมล..."
           count={filteredUsers.length} total={users.length}
@@ -93,7 +134,8 @@ export default function AdminUsersPage() {
             onReset={users.length ? () => {setSearch('');setRoleFilter('ALL');setStatusFilter('ALL');} : undefined}/>}
         </div>
       </section>}
-      <AdminConfirmDialog intent={confirmUser} busy={Boolean(busyId)}
+      {isAdmin && <AdminCreateDialog open={createOpen} onCancel={closeCreate} onCreate={createAdmin}/>}
+      <AdminConfirmDialog intent={isAdmin ? confirmUser : null} busy={Boolean(busyId)}
         title={confirmUser?.isActive ? 'ยืนยันระงับบัญชี?' : 'ยืนยันเปิดใช้งานบัญชี?'}
         message={confirmUser ? `คุณกำลัง${confirmUser.isActive ? 'ระงับ' : 'เปิดใช้งาน'}บัญชี “${confirmUser.name}” การดำเนินการนี้จะเปลี่ยนสถานะการเข้าใช้งานของบัญชี` : ''}
         actionLabel={confirmUser?.isActive ? 'ยืนยันระงับบัญชี' : 'ยืนยันเปิดใช้งาน'}

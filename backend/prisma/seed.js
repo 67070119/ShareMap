@@ -4,61 +4,53 @@ import bcrypt from 'bcryptjs';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient, Role } from '@prisma/client';
 
+/**
+ * DEVELOPMENT-ONLY demo USER creation.
+ * NEVER create/promote/reactivate an ADMIN, nor modify an existing account.
+ * First Admin: manual CLI bootstrap. Further Admins: protected Dashboard.
+ */
+// Prevent demo-account seeding in deployed production containers.
+if (process.env.NODE_ENV === 'production') {
+  throw new Error('DEMO_SEED_DISABLED_IN_PRODUCTION: Seed is development/test only.');
+}
 if (!process.env.DATABASE_URL) {
   throw new Error('DATABASE_URL is required for seed');
 }
-
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
 
-async function passwordHashFromEnv(name) {
-  const password = process.env[name] || randomBytes(32).toString('hex');
-  return bcrypt.hash(password, 12);
-}
-
 async function main() {
-  const [adminPasswordHash, userPasswordHash] = await Promise.all([
-    passwordHashFromEnv('SEED_ADMIN_PASSWORD'),
-    passwordHashFromEnv('SEED_USER_PASSWORD'),
-  ]);
-
-  await prisma.user.upsert({
-    where: { email: 'admin@ogtb.local' },
-    update: {
-      name: 'OGTB Admin',
-      role: Role.ADMIN,
-      isActive: true,
-      ...(process.env.SEED_ADMIN_PASSWORD ? { passwordHash: adminPasswordHash } : {}),
-    },
-    create: {
-      name: 'OGTB Admin',
-      email: 'admin@ogtb.local',
-      passwordHash: adminPasswordHash,
-      role: Role.ADMIN,
-    },
-  });
-
-  await prisma.user.upsert({
-    where: { email: 'user@ogtb.local' },
-    update: {
-      name: 'OGTB User',
-      role: Role.USER,
-      isActive: true,
-      ...(process.env.SEED_USER_PASSWORD ? { passwordHash: userPasswordHash } : {}),
-    },
-    create: {
-      name: 'OGTB User',
-      email: 'user@ogtb.local',
-      passwordHash: userPasswordHash,
-      role: Role.USER,
-    },
-  });
+  const email = 'user@ogtb.local';
+  const existing = await prisma.user.findUnique({ where: { email }, select: { id: true } });
+  if (existing) {
+    console.log('Demo user already exists; it was left unchanged.');
+    return;
+  }
+  const password = process.env.SEED_USER_PASSWORD || randomBytes(32).toString('hex');
+  const passwordHash = await bcrypt.hash(password, 12);
+  try {
+    await prisma.user.create({
+      data: {
+        name: 'OGTB User',
+        email,
+        passwordHash,
+        role: Role.USER,
+        isActive: true,
+      },
+    });
+    console.log('Demo USER created; no ADMIN account was created or changed.');
+  } catch (error) {
+    // Concurrent seed is idempotent; any existing email (USER or ADMIN) is untouched.
+    if (error?.code === 'P2002') {
+      console.log('Demo user already exists; it was left unchanged.');
+      return;
+    }
+    throw error;
+  }
 }
 
-main()
-  .then(async () => prisma.$disconnect())
-  .catch(async (error) => {
-    console.error(error);
-    await prisma.$disconnect();
-    process.exit(1);
-  });
+main().then(async () => prisma.$disconnect()).catch(async () => {
+  console.error('SEED_FAILED: Database unavailable or could not seed demo USER.');
+  await prisma.$disconnect();
+  process.exitCode = 1;
+});

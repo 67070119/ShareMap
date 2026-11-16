@@ -1,12 +1,15 @@
+# Default Compose = production. For hot reload use dokcer-compose.dev.yaml explicitly.
 services:
   db:
     image: postgres:17-alpine
+    restart: unless-stopped
     environment:
       POSTGRES_USER: ogtb
       POSTGRES_PASSWORD: ogtb
       POSTGRES_DB: ogtb_donation_map
+    # Database is not published to the public network.
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -16,47 +19,53 @@ services:
       retries: 10
 
   backend:
-    image: node:24-alpine
-    working_dir: /app
-    command: sh -c "npm install && npm run prisma:generate && npm run db:deploy && npm run dev"
-    volumes:
-      - ./backend:/app
-      - backend_node_modules:/app/node_modules
-    ports:
-      - "${BACKEND_PORT:-4000}:${BACKEND_PORT:-4000}"
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    init: true
+    command: sh -c "npm run db:deploy && npm run start"
     environment:
       BACKEND_PORT: ${BACKEND_PORT:-4000}
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
       DATABASE_URL: postgresql://ogtb:ogtb@db:5432/ogtb_donation_map?schema=public
       ROUTING_BASE_URL: ${ROUTING_BASE_URL:-https://router.project-osrm.org}
       DISABLE_AUTO_SELECT_FAMILY: ${DISABLE_AUTO_SELECT_FAMILY:-true}
-      JWT_SECRET: ${JWT_SECRET:-local-development-only-secret}
-      SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-}
-      SEED_USER_PASSWORD: ${SEED_USER_PASSWORD:-}
-      E2E_DISABLE_RATE_LIMIT: ${E2E_DISABLE_RATE_LIMIT:-false}
-      NODE_ENV: ${NODE_ENV:-development}
+      JWT_SECRET: ${JWT_SECRET:?Set a strong JWT_SECRET in the root .env before production startup}
+      NODE_ENV: production
+    ports:
+      - "127.0.0.1:${BACKEND_PORT:-4000}:${BACKEND_PORT:-4000}"
+    # Donation photos are persisted on the host and shared with the dev compose.
+    volumes:
+      - ./backend/uploads:/app/uploads
     depends_on:
       db:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:'+process.env.BACKEND_PORT+'/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      start_period: 25s
+      retries: 5
 
   frontend:
-    image: node:24-alpine
-    working_dir: /app
-    command: sh -c "npm install && npm run dev -- --hostname 0.0.0.0"
-    volumes:
-      - ./frontend:/app
-      - frontend_node_modules:/app/node_modules
-      - frontend_next:/app/.next
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        BACKEND_INTERNAL_URL: http://backend:${BACKEND_PORT:-4000}
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL-}
+    restart: unless-stopped
+    init: true
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      BACKEND_INTERNAL_URL: http://backend:${BACKEND_PORT:-4000}
     ports:
       - "${FRONTEND_PORT:-3000}:3000"
-    environment:
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL-}
-      BACKEND_INTERNAL_URL: http://backend:${BACKEND_PORT:-4000}
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
 
 volumes:
   postgres_data:
-  backend_node_modules:
-  frontend_node_modules:
-  frontend_next:

@@ -2,6 +2,28 @@
 
 API ทั้งหมดต้องยึดตาม `server-side-project-system.md`
 
+**Deployment state, 2026-11-16:** The following Admin API contract was
+verified on an **isolated disposable PostgreSQL**, but the active Dev
+database was found (read-only) to lack `AdminBootstrapState` and
+`AdminAuditLog`. Its Admin creation/status changes must not be
+considered live-ready until the schema is migrated under an approved
+rollout. The Dev container may hot reload application code independently
+of database migrations. See `docs/docker-admin-setup.md`.
+
+## Initial Admin setup (not an HTTP endpoint)
+
+The first ADMIN is created ONLY by the trusted operator via
+`npm run admin:bootstrap` in an interactive server terminal, and cannot
+be created through public registration or an HTTP endpoint. The CLI's
+one-time lock is stored in `AdminBootstrapState`. Existing legacy ADMINs
+are recognized without resetting their credentials.
+
+`POST /api/admin/users/admins` is **implemented in Phase 3** and
+requires an existing active ADMIN session. It creates only *subsequent*
+Admin accounts (requires permanent bootstrap marker). The Dashboard
+creation form is implemented in Phase 4 at `/admin/users`. Public register always assigns
+`USER`. Operator instructions: `docs/admin-bootstrap.md`.
+
 ## Authentication
 
 | Method | Endpoint | Description | Access | Success |
@@ -119,6 +141,7 @@ Reason:
 | Method | Endpoint | Description | Access | Success |
 | --- | --- | --- | --- | ---: |
 | GET | `/api/admin/users` | ดู Users ทั้งหมด | ADMIN | 200 |
+| POST | `/api/admin/users/admins` | สร้าง ADMIN คนต่อไป (หลัง CLI bootstrap) | ADMIN | 201 |
 | PATCH | `/api/admin/users/:id/status` | ระงับ/เปิดบัญชีด้วย `isActive` | ADMIN | 200 |
 | GET | `/api/admin/donations` | ดู Donations ทั้งหมดรวมโพสต์ซ่อน | ADMIN | 200 |
 | GET | `/api/admin/donations/:id` | ดู Donation Detail สำหรับ Admin รวมโพสต์ที่ถูกซ่อนและ Reports | ADMIN | 200 |
@@ -127,6 +150,48 @@ Reason:
 | GET | `/api/admin/reports` | ดู Reports ทั้งหมด | ADMIN | 200 |
 | GET | `/api/admin/reports/:id` | ดู Report Detail | ADMIN | 200 |
 | PATCH | `/api/admin/reports/:id` | เปลี่ยน `PENDING` / `RESOLVED` | ADMIN | 200 |
+
+### POST /api/admin/users/admins — Protected additional Admin creation
+
+- **Request JSON:** `{"name":"Admin Name","email":"new-admin@example.org","password":"choose-a-strong-password"}`.
+  Fields other than `name`, `email`, and `password` are **rejected**;
+  clients cannot set `role`, `isActive`, ID or password hash.
+- **Validation:** Name 2–80 characters; syntactically valid email at most
+  254 characters, normalized to lowercase; password 8–72 characters and
+  at most 72 UTF-8 bytes (bcrypt 12 rounds), no control characters.
+  Email has a DB unique constraint. Response is safe DTO:
+  `id/name/email/role/isActive/createdAt/updatedAt/_count`,
+  **never** `passwordHash` or plaintext password.
+- `201` new Admin created, `400 VALIDATION_ERROR` for malformed/forbidden
+  fields, `401 UNAUTHORIZED`/`INVALID_SESSION` for no session,
+  `403 FORBIDDEN` for USER, `403 ADMIN_ACCESS_REVOKED` if actor
+  stopped being an active ADMIN, `409 EMAIL_ALREADY_EXISTS` for collisions,
+  `409 ADMIN_BOOTSTRAP_REQUIRED` when the first-admin CLI state is absent.
+- Internals: `requireAuth` + `requireAdmin` on all `/api/admin` routes.
+  Service revalidates actor and checks `AdminBootstrapState` under the
+  same PostgreSQL transaction advisory lock as first-admin CLI.
+  User creation and `AdminAuditLog(ADMIN_CREATED/SUCCESS)` are atomic.
+- **No public admin-creation endpoint.** Phase 4 added the Dashboard UI,
+  which first validates and confirms without showing the secret,
+  then sends only name/email/password and refreshes the user list.
+  The API remains accessible only to authenticated ADMINs and requires
+  the one-time CLI marker, once the migration is safely installed.
+
+### PATCH /api/admin/users/:id/status — ADMIN safety
+
+- Existing `{"isActive": boolean}` contract and User/ADMIN response are preserved.
+- ADMIN-target suspension/reactivation uses the shared transaction advisory
+  lock, rechecks acting ADMIN within the transaction and logs successful
+  state changes (`ADMIN_SUSPENDED` / `ADMIN_REACTIVATED`).
+- `400 CANNOT_SUSPEND_SELF`: cannot suspend own ADMIN session.
+  `409 LAST_ACTIVE_ADMIN`: cannot suspend the final active ADMIN.
+  Denied attempts write `ADMIN_SUSPENDED/DENIED` audit atomically
+  before the error is returned.
+- Role USER status changes keep their existing endpoint semantics.
+  Idempotent status requests produce no extra audit event or timestamp change.
+- Non-existent target: `404 USER_NOT_FOUND`. Actor no longer active ADMIN:
+  `403 ADMIN_ACCESS_REVOKED`.
+- No password or hash is present in Admin API responses.
 
 ก่อนตอบข้อมูล Admin ที่มี Donation ระบบจะ refresh โพสต์ `AVAILABLE` ที่เลย `endDate` ให้เป็น `EXPIRED` เพื่อให้ Dashboard แสดงสถานะล่าสุด
 

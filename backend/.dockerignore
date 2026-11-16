@@ -1,0 +1,9 @@
+node_modules
+coverage
+tests
+uploads
+*.log
+.env*
+.git
+scripts/*.qa.*
+scripts/e2e-fixtures.mjs

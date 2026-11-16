@@ -11,6 +11,50 @@ enum Role {
   ADMIN
 }
 
+// Durable state: presence of this singleton (id=1) means first-admin CLI is locked.
+ // This state intentionally has NO FK to User: deleted/disabled Admin rows must not unlock setup.
+enum AdminBootstrapSource {
+  CLI
+  LEGACY_ADMIN
+}
+
+enum AdminAuditAction {
+  INITIAL_ADMIN_BOOTSTRAP
+  LEGACY_ADMIN_ADOPTION
+  ADMIN_CREATED
+  ADMIN_SUSPENDED
+  ADMIN_REACTIVATED
+}
+
+enum AdminAuditOutcome {
+  SUCCESS
+  DENIED
+}
+
+model AdminBootstrapState {
+  id             Int                  @id @default(1)
+  source         AdminBootstrapSource
+  initialAdminId String
+  initializedAt  DateTime             @default(now())
+
+  // Defense in depth; id is a singleton and must never be deleted to rebootstrap.
+  @@map("AdminBootstrapState")
+}
+
+model AdminAuditLog {
+  id           String            @id @default(cuid())
+  actorUserId  String?
+  targetUserId String?
+  action       AdminAuditAction
+  outcome      AdminAuditOutcome
+  createdAt    DateTime          @default(now())
+
+  // Snapshot IDs, no user FK: user deletion must not erase privilege history.
+  @@index([createdAt])
+  @@index([actorUserId, createdAt])
+  @@index([targetUserId, createdAt])
+}
+
 enum DonationStatus {
   AVAILABLE
   OUT_OF_STOCK

@@ -1,3 +1,4 @@
+import { createAdditionalAdmin } from '../services/admin-account.service.js';
 import {
   deleteDonationAsAdmin,
   getAdminDonation,
@@ -23,6 +24,15 @@ function reportStatus(value) {
     throw new AppError(400, 'VALIDATION_ERROR', 'status ต้องเป็น PENDING หรือ RESOLVED');
   }
   return value;
+}
+
+export async function createAdmin(req, res, next) {
+  try {
+    const result = await createAdditionalAdmin(req.validatedBody, req.user.id);
+    res.status(201).json(result);
+  } catch (error) {
+    next(error);
+  }
 }
 
 export async function users(_req, res, next) {
